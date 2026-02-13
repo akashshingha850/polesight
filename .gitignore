@@ -1,1 +1,6 @@
 # /data/
+/data_unlabeled/
+
+/wandb/
+/run/
+/test/
