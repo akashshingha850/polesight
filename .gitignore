@@ -4,3 +4,6 @@
 /wandb/
 /run/
 /test/
+/polesight/
+
+*.pt
