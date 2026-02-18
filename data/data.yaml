@@ -2,8 +2,8 @@ train: ../train/images
 val: ../valid/images
 test: ../test/images
 
-nc: 5
-names: ['deer_fence_pole', 'gantry_sign_pole', 'light_pole', 'power_pole', 'traffic_pole']
+nc: 1
+names: ['light_pole']
 
 roboflow:
   workspace: polesight
