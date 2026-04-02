@@ -9,8 +9,8 @@ BATCH_SIZE = 16
 PATIENCE = 20
 
 YOLO_MODEL = "yolo26"  # Pretrained model to start from
-VARIENT = ['n', 's', 'm', 'l', 'x']
-# VARIENT = ['n']
+# VARIENT = ['n', 's', 'm', 'l', 'x']
+VARIENT = ['n']
 
 #clear terminal
 os.system('clear')

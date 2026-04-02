@@ -5,6 +5,7 @@
 /run/
 /test/
 /polesight/
+*.cache
 
 *.pt
 
