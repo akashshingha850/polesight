@@ -30,24 +30,24 @@ Schema for: /home/ubuntu/Documents/github/polesight/data
 Train set analysis:
   Images: 356
   Labels: 356
-  Annotated images: 356
-  Unannotated images: 0
+  Annotated images: 324
+  Unannotated images: 32
 
 Validation set analysis:
   Images: 44
   Labels: 44
-  Annotated images: 44
-  Unannotated images: 0
+  Annotated images: 40
+  Unannotated images: 4
 
 Test set analysis:
   Images: 45
   Labels: 45
-  Annotated images: 45
-  Unannotated images: 0
+  Annotated images: 41
+  Unannotated images: 4
 
 Overall statistics:
-Images with annotations: 445
-Background without annotations: 0
+Images with annotations: 405
+Background without annotations: 40
 
 2. IMAGE FILE SIZE ANALYSIS
 ------------------------------

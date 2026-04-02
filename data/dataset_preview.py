@@ -137,7 +137,7 @@ def print_tree(directory, indent=""):
             print(f"- {item}")
 
 def count_annotated_images(images_dir, labels_dir=None):
-    """Count images that have corresponding annotation files."""
+    """Count images that have corresponding non-empty annotation files."""
     annotated_count = 0
     for root, _, files in os.walk(images_dir):
         for file in files:
@@ -155,7 +155,8 @@ def count_annotated_images(images_dir, labels_dir=None):
                     # Labels stored next to images
                     label_path = os.path.join(root, label_file)
 
-                if os.path.exists(label_path):
+                # Check if label exists and is non-empty (has content)
+                if os.path.exists(label_path) and os.path.getsize(label_path) > 0:
                     annotated_count += 1
     return annotated_count
 
