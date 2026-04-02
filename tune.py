@@ -7,17 +7,17 @@ os.system("clear")  # clear terminal
 
 EPOCHS = 100
 PATIENCE = 15
-TRIALS = 100
+TRIALS = 500
 CLOSE_MOSAIC = 10
 
-SESSION_NAME = f"tune-{datetime.now().strftime('%Y%m%d-%H%M%S')}"
+SESSION_NAME = f"tune-{datetime.now().strftime('%Y%m%d-%H%M%S')}-{TRIALS}"
 
 model = YOLO("yolo26s-seg.pt")
 tune_args = {
     **model.overrides,
     "mode": "train",
     "data": "data/data.yaml",
-    "project": "polesight-tune",
+    "project": "polesight-tune-500",
     "name": SESSION_NAME,
     "epochs": EPOCHS,
     "optimizer": "AdamW",

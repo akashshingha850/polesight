@@ -1,0 +1,13 @@
+train: ../train/images
+val: ../valid/images
+test: ../test/images
+
+nc: 5
+names: ['deer_fence_pole', 'gantry_sign_pole', 'light_pole', 'power_pole', 'traffic_pole']
+
+roboflow:
+  workspace: polesight
+  project: polesight-7kgwj
+  version: 5
+  license: Private
+  url: https://app.roboflow.com/polesight/polesight-7kgwj/5
