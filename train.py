@@ -10,7 +10,7 @@ PATIENCE = 20
 
 YOLO_MODEL = "yolo26"  # Pretrained model to start from
 # VARIENT = ['n', 's', 'm', 'l', 'x']
-VARIENT = ['n']
+VARIENT = ['s']
 
 #clear terminal
 os.system('clear')

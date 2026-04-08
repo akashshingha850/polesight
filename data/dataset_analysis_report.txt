@@ -64,12 +64,12 @@ Statistics of instances per class for each subfolder:
 --------------------------------------------------
 
 TRAIN:
-  deer_fence_pole: 183
+  deer_fence_pole: 168
   gantry_sign_pole: 86
   light_pole: 730
   power_pole: 4
   traffic_pole: 122
-  Total: 1125
+  Total: 1110
 
 VALID:
   deer_fence_pole: 34
@@ -89,55 +89,55 @@ TEST:
 
 ==================================================
 OVERALL:
-  deer_fence_pole: 235
+  deer_fence_pole: 220
   gantry_sign_pole: 106
   light_pole: 936
   power_pole: 7
   traffic_pole: 146
-  Total: 1430
+  Total: 1415
 
 4. BOUNDING BOX ANALYSIS
 ------------------------------
 
 === BOUNDING BOX ANALYSIS ===
-Total bounding boxes: 1430
+Total bounding boxes: 1415
 Class distribution:
-  deer_fence_pole (0): 235 (16.4%)
-  gantry_sign_pole (1): 106 (7.4%)
-  light_pole (2): 936 (65.5%)
+  deer_fence_pole (0): 220 (15.5%)
+  gantry_sign_pole (1): 106 (7.5%)
+  light_pole (2): 936 (66.1%)
   power_pole (3): 7 (0.5%)
-  traffic_pole (4): 146 (10.2%)
+  traffic_pole (4): 146 (10.3%)
 
 Bounding Box Width (normalized):
-  Mean: 0.476 ± 0.299
+  Mean: 0.479 ± 0.297
   Range: 0.001 - 0.999
-  Median: 0.444
+  Median: 0.446
 
 Bounding Box Height (normalized):
-  Mean: 0.325 ± 0.170
+  Mean: 0.326 ± 0.169
   Range: 0.000 - 0.914
   Median: 0.336
 
 Bounding Box Area (normalized):
-  Mean: 0.158 ± 0.136
+  Mean: 0.159 ± 0.135
   Range: 0.000 - 0.746
-  Median: 0.120
+  Median: 0.122
 
 Aspect Ratio (width/height):
-  Mean: 2.492 ± 7.790
-  Range: 0.010 - 125.875
-  Median: 1.221
+  Mean: 2.516 ± 7.827
+  Range: 0.011 - 125.875
+  Median: 1.244
 
 === PER-SPLIT BBOX STATISTICS ===
 
 TRAIN set:
-  Total boxes: 1125
-  deer_fence_pole (0): 183
+  Total boxes: 1110
+  deer_fence_pole (0): 168
   gantry_sign_pole (1): 86
   light_pole (2): 730
   power_pole (3): 4
   traffic_pole (4): 122
-  Avg aspect ratio: 2.379
+  Avg aspect ratio: 2.407
 
 VALID set:
   Total boxes: 161
@@ -162,7 +162,7 @@ TEST set:
 
 === DATASET OVERVIEW TABLE DATA ===
 Total images: 445
-Total annotations: 1,430
+Total annotations: 1,415
 Classes: 5 (deer_fence_pole, gantry_sign_pole, light_pole, power_pole, traffic_pole)
 Image format: JPEG
 Annotation format: YOLO (normalized coordinates)
@@ -176,43 +176,43 @@ Dataset type: Object Detection
 
 === BOUNDING BOX STATISTICS TABLE DATA ===
 Width (normalized):
-  Mean ± Std: 0.476 ± 0.299
-  Median: 0.444
+  Mean ± Std: 0.479 ± 0.297
+  Median: 0.446
   Range: 0.001 - 0.999
 Height (normalized):
-  Mean ± Std: 0.325 ± 0.170
+  Mean ± Std: 0.326 ± 0.169
   Median: 0.336
   Range: 0.000 - 0.914
 Area (normalized):
-  Mean ± Std: 0.158 ± 0.136
-  Median: 0.120
+  Mean ± Std: 0.159 ± 0.135
+  Median: 0.122
   Range: 0.000 - 0.746
 Aspect Ratio (width/height):
-  Mean ± Std: 2.492 ± 7.790
-  Median: 1.221
-  Range: 0.010 - 125.875
+  Mean ± Std: 2.516 ± 7.827
+  Median: 1.244
+  Range: 0.011 - 125.875
 
 === CLASS DISTRIBUTION TABLE DATA ===
-deer_fence_pole: 235 instances (16.4%)
-gantry_sign_pole: 106 instances (7.4%)
-light_pole: 936 instances (65.5%)
+deer_fence_pole: 220 instances (15.5%)
+gantry_sign_pole: 106 instances (7.5%)
+light_pole: 936 instances (66.1%)
 power_pole: 7 instances (0.5%)
-traffic_pole: 146 instances (10.2%)
-Total: 1,430 instances (100.0%)
+traffic_pole: 146 instances (10.3%)
+Total: 1,415 instances (100.0%)
 
 === DATA SPLIT DISTRIBUTION TABLE DATA ===
 Training split:
   Images: 356 (80.0%)
-  Total instances: 1125 (78.7%)
+  Total instances: 1110 (78.4%)
   Class breakdown:
-    deer_fence_pole: 183
+    deer_fence_pole: 168
     gantry_sign_pole: 86
     light_pole: 730
     power_pole: 4
     traffic_pole: 122
 Validation split:
   Images: 44 (9.9%)
-  Total instances: 161 (11.3%)
+  Total instances: 161 (11.4%)
   Class breakdown:
     deer_fence_pole: 34
     gantry_sign_pole: 11
@@ -221,7 +221,7 @@ Validation split:
     traffic_pole: 14
 Testing split:
   Images: 45 (10.1%)
-  Total instances: 144 (10.1%)
+  Total instances: 144 (10.2%)
   Class breakdown:
     deer_fence_pole: 18
     gantry_sign_pole: 9
@@ -230,7 +230,7 @@ Testing split:
     traffic_pole: 10
 Total:
   Images: 445 (100%)
-  Total instances: 1,430 (100%)
+  Total instances: 1,415 (100%)
 
 ============================================================
 COMPREHENSIVE ANALYSIS COMPLETE
