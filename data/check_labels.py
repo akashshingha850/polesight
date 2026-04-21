@@ -7,7 +7,6 @@ SPLITS = ("train", "valid", "val", "test", "draft")
 
 FIX = True
 
-
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Validate YOLO segmentation label files and report malformed rows."
