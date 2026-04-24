@@ -13,6 +13,7 @@ EPOCHS = 100
 PATIENCE = 15
 TRIALS = 300
 CLOSE_MOSAIC = 10
+BATCH_SIZE = 8
 
 SESSION_NAME = f"fine-tune-{datetime.now().strftime('%Y%m%d-%H%M%S')}-{TRIALS}"
 PROJECT_NAME = f"polesight-tune-rdetr-{TRIALS}"
@@ -33,6 +34,7 @@ tune_args = {
     "patience": PATIENCE,
     "close_mosaic": CLOSE_MOSAIC,
     "classes": [0, 1, 2, 4],  # skip power_pole (class index 3)
+    "batch": BATCH_SIZE
 }
 
 wandb.init(project=PROJECT_NAME, name=SESSION_NAME, config=tune_args)
