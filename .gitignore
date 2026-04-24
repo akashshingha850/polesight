@@ -1,12 +1,13 @@
 # /data/
-/archive/
+/archive/data_labeled/
+/archive/data_unlabeled/
+/archive/Knuutilanranta
+
 
 /wandb/
 /run/
-/test/
-/polesight/
+
 *.cache
 
 *.pt
 
-# *.png
