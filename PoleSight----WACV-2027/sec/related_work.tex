@@ -1,0 +1,248 @@
+% =========================================================================
+% PoleSight -- Related Work
+% -------------------------------------------------------------------------
+% Citation keys use AUTHOR-YEAR style. Every \cite{} key used below has a
+% matching verification link + draft BibTeX entry in the REFERENCE MANIFEST
+% at the bottom of this file (all commented out). Verify each link, then
+% move the entries into main.bib (swap full venue names for the @String
+% macros in main.bib if you prefer the abbreviated style).
+% Only peer-reviewed conference / journal papers are cited.
+% =========================================================================
+
+\section{Related Work}
+\label{sec:related}
+
+We position PoleSight against four lines of work: synthetic and simulated
+LiDAR for scaling supervision, range-image representations for learning on
+LiDAR, mobile-laser-scanning analysis of urban scenes and pole extraction,
+and existing pole or infrastructure datasets.
+
+\paragraph{Domain augmentation and simulated LiDAR.}
+Because annotating real LiDAR scans is slow and costly, a large body of work
+generates synthetic point clouds to scale supervision. Driving simulators
+such as CARLA~\cite{dosovitskiy2017carla} render virtual towns from which
+sensor data can be sampled, and game-engine pipelines extract point-level
+labels directly from virtual worlds~\cite{yue2018lidar}. To narrow the
+appearance gap, LiDARsim~\cite{manivasagam2020lidarsim} couples physics-based
+ray casting with a learned model of sensor noise to produce realistic scans
+from real-world assets. Synthetic corpora such as
+SynLiDAR~\cite{xiao2022synlidar} pair large simulated datasets with
+point-cloud translation networks, while domain-adaptation frameworks like
+ePointDA~\cite{zhao2021epointda} explicitly bridge the simulation-to-real
+shift for segmentation. These approaches are effective but require a full 3D
+environment together with a dedicated sensor-simulation or domain-adaptation
+stage. In contrast, PoleSight scales data by augmenting range images
+projected directly from real scans, avoiding both an explicit simulator and a
+separate adaptation step.
+
+\paragraph{Range-image learning.}
+Projecting a rotating LiDAR's returns into a 2D range image lets mature image
+CNNs and detectors operate on point clouds efficiently.
+SqueezeSeg~\cite{wu2018squeezeseg} and RangeNet++~\cite{milioto2019rangenet}
+perform real-time semantic segmentation in the range view, while
+LaserNet~\cite{meyer2019lasernet} and RangeDet~\cite{fan2021rangedet} show
+that range-view representations support competitive 3D object detection. This
+line of work builds on single-stage 2D detectors such as
+YOLO~\cite{redmon2016yolo}, whose speed makes them attractive for on-vehicle
+deployment. Existing range-view methods, however, are developed and evaluated
+almost exclusively on car, pedestrian, and cyclist classes from
+autonomous-driving benchmarks. PoleSight instead targets thin, vertical
+pole-like structures and provides a labeled range-image dataset that makes
+such detectors directly applicable to roadside-infrastructure mapping.
+
+\paragraph{Urban point clouds and mobile LiDAR.}
+Mobile laser scanning (MLS) has long been used to inventory road
+environments, and early pole-extraction methods rely on geometric
+heuristics---voxel- or slice-based clustering and cylinder fitting to isolate
+vertical structures~\cite{lehtomaki2010detection, pu2011recognizing,
+cabo2014algorithm}. These rule-based pipelines are accurate in their target
+scenes but are hand-tuned and do not scale to the variability of large,
+learning-driven benchmarks. Large urban MLS and driving datasets---
+Paris-Lille-3D~\cite{roynard2018parislille},
+SemanticKITTI~\cite{behley2019semantickitti}, and
+Toronto-3D~\cite{tan2020toronto}---provide dense point-wise annotations for
+many urban categories and have driven progress in 3D deep learning. Yet poles
+appear only as one incidental class among dozens, with limited per-type
+granularity. PoleSight complements these resources with a pole-centric,
+multi-class dataset designed for range-image detection rather than full-scene
+3D segmentation.
+
+\paragraph{Pole and infrastructure datasets.}
+General autonomous-driving LiDAR benchmarks such as
+KITTI~\cite{geiger2012kitti} and nuScenes~\cite{caesar2020nuscenes}, and urban
+MLS datasets~\cite{roynard2018parislille, behley2019semantickitti,
+tan2020toronto}, were built for vehicle-centric perception and treat
+pole-like objects as a minor label, if at all. Dedicated infrastructure
+datasets target narrower domains: TS40K~\cite{lavado2025ts40k}, for example,
+captures electrical-transmission corridors from an aerial, top-down view of
+rural terrain. To our knowledge, no public dataset offers dedicated,
+multi-class roadside-pole annotations (light, power, traffic, gantry-sign,
+and fence poles) in range-image form together with complementary RGB and
+intensity channels. PoleSight fills this gap and pairs the dataset with a
+scalable LiDAR-to-range-image synthetic-generation method and detection
+baselines across public data and diverse LiDAR setups.
+
+
+% =========================================================================
+% REFERENCE MANIFEST -- verify each link, then add the entry to main.bib.
+% (All venues are peer-reviewed conferences/journals. Lines flagged "VERIFY"
+%  are best-effort author/title details to double-check against the link.)
+% =========================================================================
+%
+% ---- Domain augmentation & simulated LiDAR ----
+%
+% dosovitskiy2017carla | CARLA: An Open Urban Driving Simulator | CoRL 2017 (PMLR v78)
+%   link: https://proceedings.mlr.press/v78/dosovitskiy17a.html
+% @inproceedings{dosovitskiy2017carla,
+%   author    = {Dosovitskiy, Alexey and Ros, German and Codevilla, Felipe and Lopez, Antonio and Koltun, Vladlen},
+%   title     = {{CARLA}: An Open Urban Driving Simulator},
+%   booktitle = {Conference on Robot Learning (CoRL)},
+%   pages     = {1--16}, year = {2017}}
+%
+% yue2018lidar | A LiDAR Point Cloud Generator: from a Virtual World to Autonomous Driving | ACM ICMR 2018
+%   link: https://dl.acm.org/doi/10.1145/3206025.3206080
+% @inproceedings{yue2018lidar,
+%   author    = {Yue, Xiangyu and Wu, Bichen and Seshia, Sanjit A. and Keutzer, Kurt and Sangiovanni-Vincentelli, Alberto L.},
+%   title     = {A {LiDAR} Point Cloud Generator: from a Virtual World to Autonomous Driving},
+%   booktitle = {ACM International Conference on Multimedia Retrieval (ICMR)},
+%   pages     = {458--464}, year = {2018}, doi = {10.1145/3206025.3206080}}
+%
+% manivasagam2020lidarsim | LiDARsim: Realistic LiDAR Simulation by Leveraging the Real World | CVPR 2020
+%   link: https://openaccess.thecvf.com/content_CVPR_2020/html/Manivasagam_LiDARsim_Realistic_LiDAR_Simulation_by_Leveraging_the_Real_World_CVPR_2020_paper.html
+% @inproceedings{manivasagam2020lidarsim,
+%   author    = {Manivasagam, Sivabalan and Wang, Shenlong and Wong, Kelvin and Zeng, Wenyuan and Sazanovich, Mikita and Tan, Shuhan and Yang, Bin and Ma, Wei-Chiu and Urtasun, Raquel},
+%   title     = {{LiDARsim}: Realistic {LiDAR} Simulation by Leveraging the Real World},
+%   booktitle = {IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+%   pages     = {11167--11176}, year = {2020}}
+%
+% xiao2022synlidar | Transfer Learning from Synthetic to Real LiDAR Point Cloud for Semantic Segmentation | AAAI 2022
+%   link: https://ojs.aaai.org/index.php/AAAI/article/view/20183
+% @inproceedings{xiao2022synlidar,
+%   author    = {Xiao, Aoran and Huang, Jiaxing and Guan, Dayan and Zhan, Fangneng and Lu, Shijian},
+%   title     = {Transfer Learning from Synthetic to Real {LiDAR} Point Cloud for Semantic Segmentation},
+%   booktitle = {AAAI Conference on Artificial Intelligence},
+%   volume    = {36}, number = {3}, pages = {2795--2803}, year = {2022}}
+%
+% zhao2021epointda | ePointDA: An End-to-End Simulation-to-Real Domain Adaptation Framework for LiDAR Point Cloud Segmentation | AAAI 2021
+%   link: https://ojs.aaai.org/index.php/AAAI/article/view/16464
+% @inproceedings{zhao2021epointda,                                   % VERIFY full author list against link
+%   author    = {Zhao, Sicheng and Wang, Yezhen and Li, Bo and Wu, Bichen and Gao, Yang and Xu, Pengfei and Darrell, Trevor and Keutzer, Kurt},
+%   title     = {{ePointDA}: An End-to-End Simulation-to-Real Domain Adaptation Framework for {LiDAR} Point Cloud Segmentation},
+%   booktitle = {AAAI Conference on Artificial Intelligence},
+%   volume    = {35}, number = {4}, pages = {3500--3509}, year = {2021}}
+%
+% ---- Range-image learning ----
+%
+% wu2018squeezeseg | SqueezeSeg: Convolutional Neural Nets with Recurrent CRF for Real-Time Road-Object Segmentation from 3D LiDAR Point Cloud | ICRA 2018
+%   link: https://doi.org/10.1109/ICRA.2018.8462926
+% @inproceedings{wu2018squeezeseg,
+%   author    = {Wu, Bichen and Wan, Alvin and Yue, Xiangyu and Keutzer, Kurt},
+%   title     = {{SqueezeSeg}: Convolutional Neural Nets with Recurrent {CRF} for Real-Time Road-Object Segmentation from 3D {LiDAR} Point Cloud},
+%   booktitle = {IEEE International Conference on Robotics and Automation (ICRA)},
+%   pages     = {1887--1893}, year = {2018}, doi = {10.1109/ICRA.2018.8462926}}
+%
+% milioto2019rangenet | RangeNet++: Fast and Accurate LiDAR Semantic Segmentation | IROS 2019
+%   link: https://doi.org/10.1109/IROS40897.2019.8967762
+% @inproceedings{milioto2019rangenet,
+%   author    = {Milioto, Andres and Vizzo, Ignacio and Behley, Jens and Stachniss, Cyrill},
+%   title     = {{RangeNet++}: Fast and Accurate {LiDAR} Semantic Segmentation},
+%   booktitle = {IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS)},
+%   pages     = {4213--4220}, year = {2019}, doi = {10.1109/IROS40897.2019.8967762}}
+%
+% meyer2019lasernet | LaserNet: An Efficient Probabilistic 3D Object Detector for Autonomous Driving | CVPR 2019
+%   link: https://openaccess.thecvf.com/content_CVPR_2019/html/Meyer_LaserNet_An_Efficient_Probabilistic_3D_Object_Detector_for_Autonomous_Driving_CVPR_2019_paper.html
+% @inproceedings{meyer2019lasernet,
+%   author    = {Meyer, Gregory P. and Laddha, Ankit and Kee, Eric and Vallespi-Gonzalez, Carlos and Wellington, Carl K.},
+%   title     = {{LaserNet}: An Efficient Probabilistic 3D Object Detector for Autonomous Driving},
+%   booktitle = {IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+%   pages     = {12677--12686}, year = {2019}}
+%
+% fan2021rangedet | RangeDet: In Defense of Range View for LiDAR-based 3D Object Detection | ICCV 2021
+%   link: https://www.computer.org/csdl/proceedings-article/iccv/2021/281200c898/1BmFeEDSC2I
+% @inproceedings{fan2021rangedet,
+%   author    = {Fan, Lue and Xiong, Xuan and Wang, Feng and Wang, Naiyan and Zhang, Zhaoxiang},
+%   title     = {{RangeDet}: In Defense of Range View for {LiDAR}-based 3D Object Detection},
+%   booktitle = {IEEE/CVF International Conference on Computer Vision (ICCV)},
+%   pages     = {2918--2927}, year = {2021}}
+%
+% redmon2016yolo | You Only Look Once: Unified, Real-Time Object Detection | CVPR 2016
+%   link: https://openaccess.thecvf.com/content_cvpr_2016/html/Redmon_You_Only_Look_CVPR_2016_paper.html
+% @inproceedings{redmon2016yolo,
+%   author    = {Redmon, Joseph and Divvala, Santosh and Girshick, Ross and Farhadi, Ali},
+%   title     = {You Only Look Once: Unified, Real-Time Object Detection},
+%   booktitle = {IEEE Conference on Computer Vision and Pattern Recognition (CVPR)},
+%   pages     = {779--788}, year = {2016}}
+%
+% ---- Urban point clouds & mobile LiDAR (pole extraction) ----
+%
+% lehtomaki2010detection | Detection of Vertical Pole-Like Objects in a Road Environment Using Vehicle-Based Laser Scanning Data | Remote Sensing 2010
+%   link: https://doi.org/10.3390/rs2030641
+% @article{lehtomaki2010detection,
+%   author  = {Lehtom{\"a}ki, Matti and Jaakkola, Anttoni and Hyypp{\"a}, Juha and Kukko, Antero and Kaartinen, Harri},
+%   title   = {Detection of Vertical Pole-Like Objects in a Road Environment Using Vehicle-Based Laser Scanning Data},
+%   journal = {Remote Sensing}, volume = {2}, number = {3}, pages = {641--664}, year = {2010}, doi = {10.3390/rs2030641}}
+%
+% pu2011recognizing | Recognizing basic structures from mobile laser scanning data for road inventory studies | ISPRS J. Photogramm. Remote Sens. 2011
+%   link: https://www.sciencedirect.com/science/article/abs/pii/S0924271611000955
+% @article{pu2011recognizing,
+%   author  = {Pu, Shi and Rutzinger, Martin and Vosselman, George and Oude Elberink, Sander},
+%   title   = {Recognizing basic structures from mobile laser scanning data for road inventory studies},
+%   journal = {ISPRS Journal of Photogrammetry and Remote Sensing}, volume = {66}, number = {6}, pages = {S28--S39}, year = {2011}}
+%
+% cabo2014algorithm | An algorithm for automatic detection of pole-like street furniture objects from Mobile Laser Scanner point clouds | ISPRS J. Photogramm. Remote Sens. 2014
+%   link: https://www.sciencedirect.com/science/article/pii/S092427161300230X
+% @article{cabo2014algorithm,
+%   author  = {Cabo, Carlos and Ord{\'o}{\~n}ez, Celestino and Garc{\'i}a-Cort{\'e}s, Silverio and Mart{\'i}nez, Javier},
+%   title   = {An algorithm for automatic detection of pole-like street furniture objects from Mobile Laser Scanner point clouds},
+%   journal = {ISPRS Journal of Photogrammetry and Remote Sensing}, volume = {87}, pages = {47--56}, year = {2014}, doi = {10.1016/j.isprsjprs.2013.10.008}}
+%
+% roynard2018parislille | Paris-Lille-3D: A large and high-quality ground-truth urban point cloud dataset for automatic segmentation and classification | IJRR 2018
+%   link: https://doi.org/10.1177/0278364918767506
+% @article{roynard2018parislille,
+%   author  = {Roynard, Xavier and Deschaud, Jean-Emmanuel and Goulette, Fran{\c{c}}ois},
+%   title   = {{Paris-Lille-3D}: A large and high-quality ground-truth urban point cloud dataset for automatic segmentation and classification},
+%   journal = {International Journal of Robotics Research}, volume = {37}, number = {6}, pages = {545--557}, year = {2018}, doi = {10.1177/0278364918767506}}
+%
+% behley2019semantickitti | SemanticKITTI: A Dataset for Semantic Scene Understanding of LiDAR Sequences | ICCV 2019
+%   link: https://openaccess.thecvf.com/content_ICCV_2019/html/Behley_SemanticKITTI_A_Dataset_for_Semantic_Scene_Understanding_of_LiDAR_Sequences_ICCV_2019_paper.html
+% @inproceedings{behley2019semantickitti,
+%   author    = {Behley, Jens and Garbade, Martin and Milioto, Andres and Quenzel, Jan and Behnke, Sven and Stachniss, Cyrill and Gall, J{\"u}rgen},
+%   title     = {{SemanticKITTI}: A Dataset for Semantic Scene Understanding of {LiDAR} Sequences},
+%   booktitle = {IEEE/CVF International Conference on Computer Vision (ICCV)},
+%   pages     = {9297--9307}, year = {2019}}
+%
+% tan2020toronto | Toronto-3D: A Large-Scale Mobile LiDAR Dataset for Semantic Segmentation of Urban Roadways | CVPR Workshops 2020
+%   link: https://openaccess.thecvf.com/content_CVPRW_2020/html/w11/Tan_Toronto-3D_A_Large-Scale_Mobile_LiDAR_Dataset_for_Semantic_Segmentation_of_CVPRW_2020_paper.html
+% @inproceedings{tan2020toronto,
+%   author    = {Tan, Weikai and Qin, Nannan and Ma, Lingfei and Li, Ying and Du, Jing and Cai, Guorong and Yang, Ke and Li, Jonathan},
+%   title     = {{Toronto-3D}: A Large-Scale Mobile {LiDAR} Dataset for Semantic Segmentation of Urban Roadways},
+%   booktitle = {IEEE/CVF Conference on Computer Vision and Pattern Recognition Workshops (CVPRW)},
+%   pages     = {797--806}, year = {2020}}
+%
+% ---- Pole / infrastructure datasets (positioning) ----
+%
+% geiger2012kitti | Are we ready for autonomous driving? The KITTI Vision Benchmark Suite | CVPR 2012
+%   link: https://doi.org/10.1109/CVPR.2012.6248074
+% @inproceedings{geiger2012kitti,
+%   author    = {Geiger, Andreas and Lenz, Philip and Urtasun, Raquel},
+%   title     = {Are we ready for autonomous driving? The {KITTI} Vision Benchmark Suite},
+%   booktitle = {IEEE Conference on Computer Vision and Pattern Recognition (CVPR)},
+%   pages     = {3354--3361}, year = {2012}, doi = {10.1109/CVPR.2012.6248074}}
+%
+% caesar2020nuscenes | nuScenes: A Multimodal Dataset for Autonomous Driving | CVPR 2020
+%   link: https://openaccess.thecvf.com/content_CVPR_2020/html/Caesar_nuScenes_A_Multimodal_Dataset_for_Autonomous_Driving_CVPR_2020_paper.html
+% @inproceedings{caesar2020nuscenes,
+%   author    = {Caesar, Holger and Bankiti, Varun and Lang, Alex H. and Vora, Sourabh and Liong, Venice Erin and Xu, Qiang and Krishnan, Anush and Pan, Yu and Baldan, Giancarlo and Beijbom, Oscar},
+%   title     = {{nuScenes}: A Multimodal Dataset for Autonomous Driving},
+%   booktitle = {IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+%   pages     = {11621--11631}, year = {2020}}
+%
+% lavado2025ts40k | TS40K: a 3D Point Cloud Dataset of Rural Terrain and Electrical Transmission System | WACV 2025
+%   link: https://openaccess.thecvf.com/content/WACV2025/papers/Lavado_Learning_under_Noisy_Labels_Spurious_Points_and_Diverse_Structures_TS40K_WACV_2025_paper.pdf
+% @inproceedings{lavado2025ts40k,                                    % VERIFY exact title/authors against link
+%   author    = {Lavado, Diogo and Soares, Cl{\'a}udia and Micheletti, Alessandra and others},
+%   title     = {{TS40K}: a 3D Point Cloud Dataset of Rural Terrain and Electrical Transmission System},
+%   booktitle = {IEEE/CVF Winter Conference on Applications of Computer Vision (WACV)},
+%   year      = {2025}}
+%
+% =========================================================================
