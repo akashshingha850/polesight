@@ -1,16 +1,26 @@
-# /data/
-/archive/data_labeled/
-/archive/data_unlabeled/
-# /archive/Knuutilanranta
+# Data & model weights
+/data/
+/archive/
+*.pt
+*.pth
+*.onnx
+*.weights
 
-
+# Python
+__pycache__/
+*.pyc
+.venv/
 /wandb/
 /run/
-
 *.cache
 
-*.pt
+# Training scripts
+/train.py
+/tune.py
+/sync_overleaf.sh
 
+# OS
+.DS_Store
 
 # Overleaf Connect
 .overleafconnect
@@ -29,4 +39,5 @@
 *.vrb
 *.lot
 *.lof
+*.brf
 %OUTDIR%/
