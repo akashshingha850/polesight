@@ -53,45 +53,7 @@ First line of institution2 address\\
 \begin{document}
 \maketitle
 \input{sec/0_abstract}    
-\input{sec/index}[00:42:43.656][Commander] BUILD command invoked.
-[00:42:43.656][Build] The document of the active editor: file://%WS1%/main.tex
-[00:42:43.656][Build] The languageId of the document: latex
-[00:42:43.656][Root] Current workspace folders: ["file://%WS1%"]
-[00:42:43.657][Root] Try finding root from magic comment.
-[00:42:43.657][Root] Try finding root from active editor.
-[00:42:43.657][Root] Found root file from active editor: %WS1%/main.tex
-[00:42:43.657][Root] Keep using the same root file: %WS1%/main.tex
-[00:42:43.657][Event] ROOT_FILE_SEARCHED
-[00:42:43.658][Event] STRUCTURE_UPDATED
-[00:42:43.658][Build] Building root file: %WS1%/main.tex
-[00:42:43.658][Build][Recipe] Build root file %WS1%/main.tex
-[00:42:43.663][Build][Recipe] Preparing to run recipe: latexmk.
-[00:42:43.663][Build][Recipe] Prepared 1 tools.
-[00:42:43.665][Build][Recipe] Cannot run `pdflatex` to determine if we are using MiKTeX. TypeError: Cannot read properties of undefined (reading 'toString')
-[00:42:43.665]TypeError: Cannot read properties of undefined (reading 'toString')
-	at isMikTeX (/Users/akash/.vscode/extensions/james-yu.latex-workshop-10.16.1/out/src/compile/recipe.js:393:80)
-	at /Users/akash/.vscode/extensions/james-yu.latex-workshop-10.16.1/out/src/compile/recipe.js:369:63
-	at Array.forEach (<anonymous>)
-	at populateTools (/Users/akash/.vscode/extensions/james-yu.latex-workshop-10.16.1/out/src/compile/recipe.js:326:16)
-	at createBuildTools (/Users/akash/.vscode/extensions/james-yu.latex-workshop-10.16.1/out/src/compile/recipe.js:170:5)
-	at async build (/Users/akash/.vscode/extensions/james-yu.latex-workshop-10.16.1/out/src/compile/recipe.js:55:19)
-	at async Object.build (/Users/akash/.vscode/extensions/james-yu.latex-workshop-10.16.1/out/src/compile/build.js:173:5)
-	at async Object.build (/Users/akash/.vscode/extensions/james-yu.latex-workshop-10.16.1/out/src/core/commands.js:96:5)
-	at async Pg._executeContributedCommand (file:///Applications/Visual%20Studio%20Code.app/Contents/Resources/app/out/vs/workbench/api/node/extensionHostProcess.js:534:48807)
-[00:42:43.666][Build][Recipe] RootFile auxDir: %WS1% .
-[00:42:43.676][Build] Recipe step 1 The command is latexmk:["-synctex=1","-interaction=nonstopmode","-file-line-error","-pdf","-outdir=%WS1%","-auxdir=%WS1%","%WS1%/main"].
-[00:42:43.676][Build] env: undefined
-[00:42:43.676][Build] root: %WS1%/main.tex
-[00:42:43.676][Build] cwd: %WS1%
-[00:42:43.677][Build] LaTeX build process spawned with PID undefined.
-[00:42:43.678][Build] LaTeX fatal error on PID undefined. Error: spawn latexmk ENOENT
-[00:42:43.678]Error: spawn latexmk ENOENT
-	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
-	at onErrorNT (node:internal/child_process:508:16)
-	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
-[00:42:43.678][Build] Does the executable exist? $PATH: /Users/akash/.antigravity-ide/antigravity-ide/bin:/Users/akash/.antigravity/antigravity/bin:/Users/akash/.nvm/versions/node/v25.8.0/bin:/opt/homebrew/opt/ruby/bin:/opt/homebrew/lib/ruby/gems/4.0.0/bin:/opt/homebrew/opt/ruby/bin:/Applications/SnowSQL.app/Contents/MacOS:/Users/akash/.local/bin:/Users/akash/.pixi/bin:/usr/bin:/opt/homebrew/bin:/usr/local/opt/python/libexec/bin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/pkg/env/global/bin:/Library/Apple/usr/bin:/opt/homebrew/bin:/Users/akash/.lmstudio/bin, $Path: undefined, $SHELL: /bin/zsh
-[00:42:43.678][Build] 
-
+\input{sec/index}
 \input{sec/related_work}
 \input{sec/1_intro}
 \input{sec/2_formatting}
