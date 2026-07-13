@@ -1,10 +1,5 @@
-# Data & model weights
-/data/
+# /data/
 /archive/
-*.pt
-*.pth
-*.onnx
-*.weights
 
 # Python
 __pycache__/
