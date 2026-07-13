@@ -4,58 +4,56 @@ COMPREHENSIVE DATASET ANALYSIS
 
 1. DATA SCHEMA ANALYSIS
 ------------------------------
-Data (981 files):
-Schema for: /home/ubuntu/Documents/github/polesight/data
-- README.roboflow.txt
-- annotation_preview.py
+Data (1554 files):
+Schema for: /media/ubuntu/ssd/github/polesight/polesight_dataset/data
+- .draft/ (515 files)
+    └─ labels/ (515 files)
+- check_labels.py
 - data.yaml
 - data_split.py
 - dataset_analysis_report.txt
 - dataset_preview.py
-- draft/ (83 files)
-    └─ images/ (63 files)
-    └─ labels/ (20 files)
-- fix_labels.py
+- rename_labels.py
 - restore_draft.py
-- test/ (90 files)
-    └─ images/ (45 files)
-    └─ labels/ (45 files)
-- train/ (712 files)
-    └─ images/ (356 files)
-    └─ labels/ (356 files)
-- valid/ (88 files)
-    └─ images/ (44 files)
-    └─ labels/ (44 files)
+- test/ (102 files)
+    └─ images/ (51 files)
+    └─ labels/ (51 files)
+- train/ (825 files)
+    └─ images/ (412 files)
+    └─ labels/ (412 files)
+- valid/ (105 files)
+    └─ images/ (52 files)
+    └─ labels/ (52 files)
 
 Train set analysis:
-  Images: 356
-  Labels: 356
-  Annotated images: 324
-  Unannotated images: 32
+  Images: 412
+  Labels: 412
+  Annotated images: 390
+  Unannotated images: 22
 
 Validation set analysis:
-  Images: 44
-  Labels: 44
-  Annotated images: 40
-  Unannotated images: 4
+  Images: 52
+  Labels: 52
+  Annotated images: 49
+  Unannotated images: 3
 
 Test set analysis:
-  Images: 45
-  Labels: 45
-  Annotated images: 41
-  Unannotated images: 4
+  Images: 51
+  Labels: 51
+  Annotated images: 48
+  Unannotated images: 3
 
 Overall statistics:
-Images with annotations: 405
-Background without annotations: 40
+Images with annotations: 487
+Background without annotations: 28
 
 2. IMAGE FILE SIZE ANALYSIS
 ------------------------------
 File size statistics (KB):
   Min: 8
   Max: 194
-  Average: 106
-  Total files analyzed: 445
+  Average: 100
+  Total files analyzed: 515
 
 3. DATA INSTANCES ANALYSIS
 ------------------------------
@@ -64,105 +62,105 @@ Statistics of instances per class for each subfolder:
 --------------------------------------------------
 
 TRAIN:
-  deer_fence_pole: 168
-  gantry_sign_pole: 86
-  light_pole: 730
+  deer_fence_pole: 396
+  gantry_sign_pole: 108
+  light_pole: 850
   power_pole: 4
-  traffic_pole: 122
-  Total: 1110
+  traffic_pole: 160
+  Total: 1518
 
 VALID:
-  deer_fence_pole: 34
-  gantry_sign_pole: 11
-  light_pole: 100
+  deer_fence_pole: 38
+  gantry_sign_pole: 14
+  light_pole: 115
   power_pole: 2
-  traffic_pole: 14
-  Total: 161
+  traffic_pole: 19
+  Total: 188
 
 TEST:
-  deer_fence_pole: 18
-  gantry_sign_pole: 9
-  light_pole: 106
+  deer_fence_pole: 52
+  gantry_sign_pole: 17
+  light_pole: 112
   power_pole: 1
-  traffic_pole: 10
-  Total: 144
+  traffic_pole: 21
+  Total: 203
 
 ==================================================
 OVERALL:
-  deer_fence_pole: 220
-  gantry_sign_pole: 106
-  light_pole: 936
+  deer_fence_pole: 486
+  gantry_sign_pole: 139
+  light_pole: 1077
   power_pole: 7
-  traffic_pole: 146
-  Total: 1415
+  traffic_pole: 200
+  Total: 1909
 
 4. BOUNDING BOX ANALYSIS
 ------------------------------
 
 === BOUNDING BOX ANALYSIS ===
-Total bounding boxes: 1415
+Total bounding boxes: 1909
 Class distribution:
-  deer_fence_pole (0): 220 (15.5%)
-  gantry_sign_pole (1): 106 (7.5%)
-  light_pole (2): 936 (66.1%)
-  power_pole (3): 7 (0.5%)
-  traffic_pole (4): 146 (10.3%)
+  deer_fence_pole (0): 486 (25.5%)
+  gantry_sign_pole (1): 139 (7.3%)
+  light_pole (2): 1077 (56.4%)
+  power_pole (3): 7 (0.4%)
+  traffic_pole (4): 200 (10.5%)
 
 Bounding Box Width (normalized):
-  Mean: 0.479 ± 0.297
-  Range: 0.001 - 0.999
-  Median: 0.446
+  Mean: 0.490 ± 0.307
+  Range: 0.000 - 0.999
+  Median: 0.502
 
 Bounding Box Height (normalized):
-  Mean: 0.326 ± 0.169
-  Range: 0.000 - 0.914
-  Median: 0.336
+  Mean: 0.346 ± 0.168
+  Range: 0.000 - 0.977
+  Median: 0.352
 
 Bounding Box Area (normalized):
-  Mean: 0.159 ± 0.135
-  Range: 0.000 - 0.746
-  Median: 0.122
+  Mean: 0.174 ± 0.146
+  Range: 0.000 - 0.838
+  Median: 0.138
 
 Aspect Ratio (width/height):
-  Mean: 2.516 ± 7.827
-  Range: 0.011 - 125.875
-  Median: 1.244
+  Mean: 2.367 ± 7.730
+  Range: 0.000 - 125.875
+  Median: 1.288
 
 === PER-SPLIT BBOX STATISTICS ===
 
 TRAIN set:
-  Total boxes: 1110
-  deer_fence_pole (0): 168
-  gantry_sign_pole (1): 86
-  light_pole (2): 730
+  Total boxes: 1518
+  deer_fence_pole (0): 396
+  gantry_sign_pole (1): 108
+  light_pole (2): 850
   power_pole (3): 4
-  traffic_pole (4): 122
-  Avg aspect ratio: 2.407
+  traffic_pole (4): 160
+  Avg aspect ratio: 2.297
 
 VALID set:
-  Total boxes: 161
-  deer_fence_pole (0): 34
-  gantry_sign_pole (1): 11
-  light_pole (2): 100
+  Total boxes: 188
+  deer_fence_pole (0): 38
+  gantry_sign_pole (1): 14
+  light_pole (2): 115
   power_pole (3): 2
-  traffic_pole (4): 14
-  Avg aspect ratio: 4.004
+  traffic_pole (4): 19
+  Avg aspect ratio: 2.988
 
 TEST set:
-  Total boxes: 144
-  deer_fence_pole (0): 18
-  gantry_sign_pole (1): 9
-  light_pole (2): 106
+  Total boxes: 203
+  deer_fence_pole (0): 52
+  gantry_sign_pole (1): 17
+  light_pole (2): 112
   power_pole (3): 1
-  traffic_pole (4): 10
-  Avg aspect ratio: 1.689
+  traffic_pole (4): 21
+  Avg aspect ratio: 2.322
 
 5. DATASET SUMMARY FOR LATEX TABLES
 ----------------------------------------
 
 === DATASET OVERVIEW TABLE DATA ===
-Total images: 445
-Total annotations: 1,415
+Total images: 515
+Total annotations: 1,909
 Classes: 5 (deer_fence_pole, gantry_sign_pole, light_pole, power_pole, traffic_pole)
 Image format: JPEG
 Annotation format: YOLO (normalized coordinates)
@@ -171,66 +169,66 @@ Training resolution: 640 × 640 pixels (resized)
 Aspect ratio: 3:2 (1.5:1)
 Color space: RGB
 Compression: Variable quality
-File size (KB): Min: 8, Max: 194, Avg: 106
+File size (KB): Min: 8, Max: 194, Avg: 100
 Dataset type: Object Detection
 
 === BOUNDING BOX STATISTICS TABLE DATA ===
 Width (normalized):
-  Mean ± Std: 0.479 ± 0.297
-  Median: 0.446
-  Range: 0.001 - 0.999
+  Mean ± Std: 0.490 ± 0.307
+  Median: 0.502
+  Range: 0.000 - 0.999
 Height (normalized):
-  Mean ± Std: 0.326 ± 0.169
-  Median: 0.336
-  Range: 0.000 - 0.914
+  Mean ± Std: 0.346 ± 0.168
+  Median: 0.352
+  Range: 0.000 - 0.977
 Area (normalized):
-  Mean ± Std: 0.159 ± 0.135
-  Median: 0.122
-  Range: 0.000 - 0.746
+  Mean ± Std: 0.174 ± 0.146
+  Median: 0.138
+  Range: 0.000 - 0.838
 Aspect Ratio (width/height):
-  Mean ± Std: 2.516 ± 7.827
-  Median: 1.244
-  Range: 0.011 - 125.875
+  Mean ± Std: 2.367 ± 7.730
+  Median: 1.288
+  Range: 0.000 - 125.875
 
 === CLASS DISTRIBUTION TABLE DATA ===
-deer_fence_pole: 220 instances (15.5%)
-gantry_sign_pole: 106 instances (7.5%)
-light_pole: 936 instances (66.1%)
-power_pole: 7 instances (0.5%)
-traffic_pole: 146 instances (10.3%)
-Total: 1,415 instances (100.0%)
+deer_fence_pole: 486 instances (25.5%)
+gantry_sign_pole: 139 instances (7.3%)
+light_pole: 1077 instances (56.4%)
+power_pole: 7 instances (0.4%)
+traffic_pole: 200 instances (10.5%)
+Total:  instances (100.0%)
 
 === DATA SPLIT DISTRIBUTION TABLE DATA ===
 Training split:
-  Images: 356 (80.0%)
-  Total instances: 1110 (78.4%)
+  Images: 412 (80.0%)
+  Total instances: 1518 (79.5%)
   Class breakdown:
-    deer_fence_pole: 168
-    gantry_sign_pole: 86
-    light_pole: 730
+    deer_fence_pole: 396
+    gantry_sign_pole: 108
+    light_pole: 850
     power_pole: 4
-    traffic_pole: 122
+    traffic_pole: 160
 Validation split:
-  Images: 44 (9.9%)
-  Total instances: 161 (11.4%)
+  Images: 52 (10.1%)
+  Total instances: 188 (9.8%)
   Class breakdown:
-    deer_fence_pole: 34
-    gantry_sign_pole: 11
-    light_pole: 100
+    deer_fence_pole: 38
+    gantry_sign_pole: 14
+    light_pole: 115
     power_pole: 2
-    traffic_pole: 14
+    traffic_pole: 19
 Testing split:
-  Images: 45 (10.1%)
-  Total instances: 144 (10.2%)
+  Images: 51 (9.9%)
+  Total instances: 203 (10.6%)
   Class breakdown:
-    deer_fence_pole: 18
-    gantry_sign_pole: 9
-    light_pole: 106
+    deer_fence_pole: 52
+    gantry_sign_pole: 17
+    light_pole: 112
     power_pole: 1
-    traffic_pole: 10
+    traffic_pole: 21
 Total:
-  Images: 445 (100%)
-  Total instances: 1,415 (100%)
+  Images: 515 (100%)
+  Total instances: 1,909 (100%)
 
 ============================================================
 COMPREHENSIVE ANALYSIS COMPLETE

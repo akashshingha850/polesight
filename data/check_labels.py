@@ -5,7 +5,7 @@ from pathlib import Path
 
 SPLITS = ("train", "valid", "val", "test", "draft")
 
-FIX = True
+FIX = False
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(

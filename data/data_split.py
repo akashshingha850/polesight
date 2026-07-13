@@ -8,26 +8,30 @@ from pathlib import Path
 TRAIN_RATIO = 0.8
 VAL_RATIO = 0.1
 TEST_RATIO = 0.1
-BG_RATIO = 0.1  # Background images are sampled as a percentage of labeled samples.
 SEED = 42
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
 DATA_DIR = ROOT_DIR / "data"
-SOURCE_IMAGES_DIR = DATA_DIR / "draft" / "images"
-SOURCE_LABELS_DIR = DATA_DIR / "draft" / "labels"
+SOURCE_LABELS_DIR = DATA_DIR / ".draft" / "labels"
+# Images live under archive/<dataset>/... (scanned recursively). Drop new
+# datasets (e.g. vt7) anywhere under archive/ and rerun to include them.
+SOURCE_IMAGES_DIR = ROOT_DIR / "archive"
 SPLITS = ("train", "valid", "test")
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png"}
 
 
 def build_image_index(images_dir: Path) -> dict[str, Path]:
     image_index: dict[str, Path] = {}
-    for image_path in sorted(images_dir.iterdir()):
+    for image_path in sorted(images_dir.rglob("*")):
         if not image_path.is_file() or image_path.suffix.lower() not in IMAGE_EXTENSIONS:
             continue
 
         stem = image_path.stem
-        if stem in image_index:
-            raise SystemExit(f"duplicate image stem found: {stem}")
+        existing = image_index.get(stem)
+        if existing is not None:
+            raise SystemExit(
+                f"duplicate image stem '{stem}': {existing} and {image_path}"
+            )
         image_index[stem] = image_path
 
     return image_index
@@ -74,57 +78,50 @@ def split_items(items: list[str], train_ratio: float, val_ratio: float, test_rat
     return train_items, val_items, test_items
 
 
-def ensure_output_dirs() -> None:
+def reset_output_dirs(dry_run: bool) -> None:
     for split in SPLITS:
-        (DATA_DIR / split / "images").mkdir(parents=True, exist_ok=True)
-        (DATA_DIR / split / "labels").mkdir(parents=True, exist_ok=True)
+        for kind in ("images", "labels"):
+            target = DATA_DIR / split / kind
+            if not dry_run and target.exists():
+                shutil.rmtree(target)
+            if not dry_run:
+                target.mkdir(parents=True, exist_ok=True)
 
 
-def move_sample(
+def copy_sample(
     stem: str,
     split: str,
     image_index: dict[str, Path],
     label_index: dict[str, Path],
     dry_run: bool,
-) -> None:
+) -> bool:
     image_path = image_index.get(stem)
-    label_path = label_index.get(stem)
+    label_path = label_index[stem]
 
     if image_path is None:
-        print(f"skip: missing image for label {stem}.txt")
-        return
+        print(f"skip: no image found for label {stem}.txt")
+        return False
 
-    if label_path is None:
-        print(f"background: {image_path.name}")
-    elif label_path.stat().st_size == 0:
-        print(f"background: {image_path.name} (empty label)")
-    else:
-        print(f"move: {image_path.name} + {label_path.name} -> {split}")
+    is_background = label_path.stat().st_size == 0
+    tag = "background" if is_background else "labeled"
+    print(f"copy [{tag}]: {image_path.name} + {label_path.name} -> {split}")
 
     if dry_run:
-        return
+        return True
 
     image_dst = DATA_DIR / split / "images" / image_path.name
-    if image_dst.exists():
-        raise SystemExit(f"destination image already exists: {image_dst}")
-    shutil.move(str(image_path), str(image_dst))
+    shutil.copy2(image_path, image_dst)
 
-    if label_path is None:
-        label_dst = DATA_DIR / split / "labels" / f"{stem}.txt"
-        if label_dst.exists():
-            raise SystemExit(f"destination label already exists: {label_dst}")
-        label_dst.touch()
-        return
-
-    label_dst = DATA_DIR / split / "labels" / label_path.name
-    if label_dst.exists():
-        raise SystemExit(f"destination label already exists: {label_dst}")
-    shutil.move(str(label_path), str(label_dst))
+    label_dst = DATA_DIR / split / "labels" / f"{stem}.txt"
+    shutil.copy2(label_path, label_dst)
+    return True
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Split draft images and labels into train/valid/test folders.")
-    parser.add_argument("--dry-run", action="store_true", help="Print planned moves without changing files.")
+    parser = argparse.ArgumentParser(
+        description="Match .draft labels to archive images and copy into train/valid/test."
+    )
+    parser.add_argument("--dry-run", action="store_true", help="Print planned actions without changing files.")
     return parser.parse_args()
 
 
@@ -136,49 +133,47 @@ def main() -> None:
     if not SOURCE_LABELS_DIR.exists():
         raise SystemExit(f"labels directory not found: {SOURCE_LABELS_DIR}")
 
-    ensure_output_dirs()
-
     image_index = build_image_index(SOURCE_IMAGES_DIR)
     label_index = build_label_index(SOURCE_LABELS_DIR)
 
-    labeled_stems = [stem for stem in label_index if stem in image_index and label_index[stem].stat().st_size > 0]
-    background_candidates = [stem for stem, image_path in image_index.items() if stem not in label_index or label_index.get(stem, image_path).stat().st_size == 0]
-    random.Random(SEED).shuffle(background_candidates)
+    matched = [stem for stem in label_index if stem in image_index]
+    missing = [stem for stem in label_index if stem not in image_index]
+    if missing:
+        print(f"warning: {len(missing)} labels have no matching image (skipped)")
 
-    missing_images = [stem for stem in label_index if stem not in image_index]
-    if missing_images:
-        print(f"warning: {len(missing_images)} labels have no matching image")
+    # Empty label files are background/negative samples; split them separately
+    # so they are distributed proportionally across train/valid/test.
+    foreground = [stem for stem in matched if label_index[stem].stat().st_size > 0]
+    background = [stem for stem in matched if label_index[stem].stat().st_size == 0]
 
-    background_target = min(len(background_candidates), int(round(len(labeled_stems) * BG_RATIO)))
-    selected_backgrounds = background_candidates[:background_target]
+    fg_train, fg_valid, fg_test = split_items(foreground, TRAIN_RATIO, VAL_RATIO, TEST_RATIO, SEED)
+    bg_train, bg_valid, bg_test = split_items(background, TRAIN_RATIO, VAL_RATIO, TEST_RATIO, SEED + 1)
 
-    labeled_train, labeled_valid, labeled_test = split_items(labeled_stems, TRAIN_RATIO, VAL_RATIO, TEST_RATIO, SEED)
-    bg_train, bg_valid, bg_test = split_items(selected_backgrounds, TRAIN_RATIO, VAL_RATIO, TEST_RATIO, SEED + 1)
-
-    split_counts = {
-        "train": {"labeled": len(labeled_train), "background": len(bg_train)},
-        "valid": {"labeled": len(labeled_valid), "background": len(bg_valid)},
-        "test": {"labeled": len(labeled_test), "background": len(bg_test)},
+    per_split = {
+        "train": (fg_train, bg_train),
+        "valid": (fg_valid, bg_valid),
+        "test": (fg_test, bg_test),
     }
 
-    for stem in labeled_train + bg_train:
-        move_sample(stem, "train", image_index, label_index, args.dry_run)
-    for stem in labeled_valid + bg_valid:
-        move_sample(stem, "valid", image_index, label_index, args.dry_run)
-    for stem in labeled_test + bg_test:
-        move_sample(stem, "test", image_index, label_index, args.dry_run)
+    reset_output_dirs(args.dry_run)
+
+    copied = {split: 0 for split in SPLITS}
+    for split in SPLITS:
+        fg_stems, bg_stems = per_split[split]
+        for stem in fg_stems + bg_stems:
+            if copy_sample(stem, split, image_index, label_index, args.dry_run):
+                copied[split] += 1
 
     print(
-        "Dataset split complete: "
-        f"labeled={len(labeled_stems)}, "
-        f"background_candidates={len(background_candidates)}, "
-        f"background_selected={len(selected_backgrounds)}"
+        "Split complete: "
+        f"labels={len(label_index)}, matched={len(matched)}, missing={len(missing)}, "
+        f"foreground={len(foreground)}, background={len(background)}"
     )
-    for split_name in SPLITS:
-        counts = split_counts[split_name]
+    for split in SPLITS:
+        fg_stems, bg_stems = per_split[split]
         print(
-            f"{split_name}: labeled={counts['labeled']}, background={counts['background']}, "
-            f"total={counts['labeled'] + counts['background']}"
+            f"{split}: labeled={len(fg_stems)}, background={len(bg_stems)}, "
+            f"total={len(fg_stems) + len(bg_stems)}, copied={copied[split]}"
         )
 
 
