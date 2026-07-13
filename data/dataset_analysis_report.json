@@ -1,0 +1,224 @@
+{
+  "dataset_overview": {
+    "total_images": 515,
+    "total_annotations": 1909,
+    "images_with_annotations": 487,
+    "background_images": 28,
+    "num_classes": 5,
+    "class_names": [
+      "fence_pole",
+      "gantry_sign_pole",
+      "light_pole",
+      "power_pole",
+      "traffic_pole"
+    ],
+    "image_format": "JPEG",
+    "annotation_format": "YOLO (normalized coordinates)",
+    "original_resolution": "960 x 640 pixels",
+    "training_resolution": "640 x 640 pixels (resized)",
+    "aspect_ratio": "3:2 (1.5:1)",
+    "color_space": "RGB",
+    "dataset_type": "Object Detection",
+    "file_size_kb": {
+      "min": 7.6,
+      "max": 194.5,
+      "avg": 100.5,
+      "median": 105.8,
+      "total_files": 515
+    }
+  },
+  "splits": {
+    "train": {
+      "images": 412,
+      "labels": 412,
+      "annotated": 390,
+      "unannotated": 22,
+      "instances": {
+        "0": 396,
+        "1": 108,
+        "2": 850,
+        "3": 4,
+        "4": 160
+      },
+      "total_instances": 1518,
+      "image_pct": 80.0,
+      "instance_pct": 79.52
+    },
+    "valid": {
+      "images": 52,
+      "labels": 52,
+      "annotated": 49,
+      "unannotated": 3,
+      "instances": {
+        "0": 38,
+        "1": 14,
+        "2": 115,
+        "3": 2,
+        "4": 19
+      },
+      "total_instances": 188,
+      "image_pct": 10.1,
+      "instance_pct": 9.85
+    },
+    "test": {
+      "images": 51,
+      "labels": 51,
+      "annotated": 48,
+      "unannotated": 3,
+      "instances": {
+        "0": 52,
+        "1": 17,
+        "2": 112,
+        "3": 1,
+        "4": 21
+      },
+      "total_instances": 203,
+      "image_pct": 9.9,
+      "instance_pct": 10.63
+    }
+  },
+  "class_distribution": {
+    "fence_pole": {
+      "class_id": 0,
+      "count": 486,
+      "pct": 25.46,
+      "color": "#2a78d6"
+    },
+    "gantry_sign_pole": {
+      "class_id": 1,
+      "count": 139,
+      "pct": 7.28,
+      "color": "#1baf7a"
+    },
+    "light_pole": {
+      "class_id": 2,
+      "count": 1077,
+      "pct": 56.42,
+      "color": "#eda100"
+    },
+    "power_pole": {
+      "class_id": 3,
+      "count": 7,
+      "pct": 0.37,
+      "color": "#008300"
+    },
+    "traffic_pole": {
+      "class_id": 4,
+      "count": 200,
+      "pct": 10.48,
+      "color": "#4a3aa7"
+    }
+  },
+  "bounding_boxes": {
+    "total_boxes": 1909,
+    "width": {
+      "mean": 0.48985070717653223,
+      "std": 0.3071891112646054,
+      "min": 0.0,
+      "max": 0.9990234375,
+      "median": 0.501953125
+    },
+    "height": {
+      "mean": 0.3459844814038764,
+      "std": 0.1682111328010484,
+      "min": 0.0,
+      "max": 0.9765625,
+      "median": 0.3515625
+    },
+    "area": {
+      "mean": 0.17373429823446299,
+      "std": 0.14638307959051758,
+      "min": 0.0,
+      "max": 0.8382797241210938,
+      "median": 0.138397216796875
+    },
+    "aspect_ratio": {
+      "mean": 2.3674860007848246,
+      "std": 7.729552743119453,
+      "min": 0.0,
+      "max": 125.875,
+      "median": 1.2877906976744187
+    },
+    "objects_per_image": {
+      "mean": 3.919917864476386,
+      "std": 2.5480502658944553,
+      "min": 1.0,
+      "max": 17.0,
+      "median": 3.0
+    },
+    "per_split": {
+      "train": {
+        "total_boxes": 1518,
+        "class_counts": {
+          "0": 396,
+          "1": 108,
+          "2": 850,
+          "3": 4,
+          "4": 160
+        },
+        "aspect_ratio": {
+          "mean": 2.2967061671039186,
+          "std": 7.0054151802959,
+          "min": 0.0,
+          "max": 123.75,
+          "median": 1.3108157467532466
+        },
+        "objects_per_image": {
+          "mean": 3.8923076923076922,
+          "std": 2.5477375197276517,
+          "min": 1.0,
+          "max": 17.0,
+          "median": 4.0
+        }
+      },
+      "valid": {
+        "total_boxes": 188,
+        "class_counts": {
+          "0": 38,
+          "1": 14,
+          "2": 115,
+          "3": 2,
+          "4": 19
+        },
+        "aspect_ratio": {
+          "mean": 2.9879962865926744,
+          "std": 11.594973805470602,
+          "min": 0.006147540983606557,
+          "max": 125.875,
+          "median": 1.1372830003275467
+        },
+        "objects_per_image": {
+          "mean": 3.836734693877551,
+          "std": 2.306573912825459,
+          "min": 1.0,
+          "max": 10.0,
+          "median": 3.0
+        }
+      },
+      "test": {
+        "total_boxes": 203,
+        "class_counts": {
+          "0": 52,
+          "1": 17,
+          "2": 112,
+          "3": 1,
+          "4": 21
+        },
+        "aspect_ratio": {
+          "mean": 2.3221059702219673,
+          "std": 8.364299868293822,
+          "min": 0.017857142857142856,
+          "max": 112.375,
+          "median": 1.2130281690140845
+        },
+        "objects_per_image": {
+          "mean": 4.229166666666667,
+          "std": 2.755597207906522,
+          "min": 1.0,
+          "max": 11.0,
+          "median": 3.0
+        }
+      }
+    }
+  }
+}

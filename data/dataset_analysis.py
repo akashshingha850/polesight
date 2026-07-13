@@ -1,24 +1,24 @@
 #!/usr/bin/env python3
 """
 Comprehensive Dataset Analysis Script
-Provides statistical analysis of the dataset including schema, instances, and bounding box analysis.
+
+Builds a fully structured statistical analysis of the object-detection dataset
+(schema, instances, split distribution, image file sizes and bounding-box
+statistics) and writes it as a machine-readable JSON report. It also renders a
+set of publication-quality figures into ``data/dataviz/``, each accompanied by a
+JSON file holding the exact data that figure plots.
 """
 
-
-
 import os
+import json
 import yaml
 import numpy as np
 from collections import defaultdict
-from contextlib import redirect_stdout
 from pathlib import Path
-import io
-
-# clear the console (Linux/Unix)
-os.system('clear')
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
 DATA_DIR = ROOT_DIR / "data"
+DATAVIZ_DIR = DATA_DIR / "dataviz"
 
 SPLIT_ALIASES = {
     "train": ("train",),
@@ -26,6 +26,8 @@ SPLIT_ALIASES = {
     "valid": ("valid", "val"),
     "test": ("test",),
 }
+
+SPLITS = ["train", "valid", "test"]
 
 
 def resolve_split_dir(split_name):
@@ -40,26 +42,21 @@ def load_classes_from_yaml():
     """Load class names from data.yaml."""
     yaml_file = DATA_DIR / "data.yaml"
     if yaml_file.exists():
-        with open(yaml_file, 'r') as f:
+        with open(yaml_file, "r") as f:
             data = yaml.safe_load(f)
-            if data and 'names' in data:
-                return data['names']
+            if data and "names" in data:
+                return data["names"]
     return []
 
 
 TRAIN_DIR = resolve_split_dir("train")
 VAL_DIR = resolve_split_dir("valid")
 TEST_DIR = resolve_split_dir("test")
-TRAIN_IMAGES_DIR = TRAIN_DIR / "images"
-TRAIN_LABELS_DIR = TRAIN_DIR / "labels"
-VAL_IMAGES_DIR = VAL_DIR / "images"
-VAL_LABELS_DIR = VAL_DIR / "labels"
-TEST_IMAGES_DIR = TEST_DIR / "images"
-TEST_LABELS_DIR = TEST_DIR / "labels"
 
-# Class names and colors
+# Class names and a fixed, CVD-safe categorical palette (dataviz reference
+# palette slots 1-5, in fixed class-id order — never cycled/re-assigned).
 CLASS_NAMES = load_classes_from_yaml()
-CLASS_COLORS = ['red', 'blue', 'green', 'yellow', 'purple', 'orange', 'pink', 'brown']
+CLASS_PALETTE = ["#2a78d6", "#1baf7a", "#eda100", "#008300", "#4a3aa7"]
 
 
 def class_name(class_id):
@@ -67,506 +64,648 @@ def class_name(class_id):
         return CLASS_NAMES[class_id]
     return f"class_{class_id}"
 
-# ===== DATA SCHEMA ANALYSIS =====
+
+def class_color(class_id):
+    return CLASS_PALETTE[class_id % len(CLASS_PALETTE)]
+
+
+# ===== FILE / SCHEMA HELPERS =====
 
 def count_files(directory, ext=None):
     """Counts files with a given extension in a directory and its subdirectories."""
     count = 0
-    for root, _, files in os.walk(directory):
+    for _, _, files in os.walk(directory):
         if ext:
             count += len([f for f in files if f.endswith(ext)])
         else:
             count += len(files)
     return count
 
-def analyze_image_file_sizes():
-    """Analyze file sizes of all images in the dataset."""
-    all_sizes = []
-    
-    # Collect file sizes from all splits
-    for split in ['train', 'valid', 'test']:
-        split_dir = resolve_split_dir(split)
-        images_dir = split_dir / 'images'
-        if images_dir.exists():
-            for filename in os.listdir(images_dir):
-                if filename.lower().endswith(('.jpg', '.jpeg', '.png')):
-                    filepath = images_dir / filename
-                    size_kb = os.path.getsize(filepath) / 1024  # Convert to KB
-                    all_sizes.append(size_kb)
-    
-    if all_sizes:
-        return {
-            'min': min(all_sizes),
-            'max': max(all_sizes),
-            'avg': np.mean(all_sizes),
-            'total_files': len(all_sizes)
-        }
-    return {'min': 0, 'max': 0, 'avg': 0, 'total_files': 0}
 
-def print_tree(directory, indent=""):
-    """Recursively prints the directory structure with file counts."""
-    def _count_top_level(d):
-        try:
-            return count_files(d)
-        except Exception:
-            return 0
-
-    print(f"Schema for: {directory}")
-    try:
-        items = sorted(os.listdir(directory))
-    except FileNotFoundError:
-        print(f"  (directory not found: {directory})")
-        return
-
-    for item in items:
-        path = os.path.join(directory, item)
-        if os.path.isdir(path):
-            total = _count_top_level(path)
-            print(f"- {item}/ ({total} files)")
-            # show immediate children counts (useful for train/val/test and images/labels)
-            try:
-                subs = sorted(os.listdir(path))
-            except Exception:
-                subs = []
-            for sub in subs:
-                subpath = os.path.join(path, sub)
-                if os.path.isdir(subpath):
-                    subcount = _count_top_level(subpath)
-                    print(f"    └─ {sub}/ ({subcount} files)")
-        else:
-            print(f"- {item}")
-
-def count_annotated_images(images_dir, labels_dir=None):
-    """Count images that have corresponding non-empty annotation files."""
+def count_annotated_images(images_dir, labels_dir):
+    """Count images that have a corresponding non-empty annotation file."""
     annotated_count = 0
     for root, _, files in os.walk(images_dir):
         for file in files:
-            if file.lower().endswith((".jpg", ".png")):
-                # Build the expected label filename
+            if file.lower().endswith((".jpg", ".jpeg", ".png")):
                 label_file = os.path.splitext(file)[0] + ".txt"
-
-                if labels_dir:
-                    # Compute relative directory from images_dir to preserve subdirectory structure
-                    rel_dir = os.path.relpath(root, images_dir)
-                    if rel_dir == ".":
-                        rel_dir = ""
-                    label_path = os.path.join(labels_dir, rel_dir, label_file) if rel_dir else os.path.join(labels_dir, label_file)
-                else:
-                    # Labels stored next to images
-                    label_path = os.path.join(root, label_file)
-
-                # Check if label exists and is non-empty (has content)
+                rel_dir = os.path.relpath(root, images_dir)
+                rel_dir = "" if rel_dir == "." else rel_dir
+                label_path = (
+                    os.path.join(labels_dir, rel_dir, label_file)
+                    if rel_dir
+                    else os.path.join(labels_dir, label_file)
+                )
                 if os.path.exists(label_path) and os.path.getsize(label_path) > 0:
                     annotated_count += 1
     return annotated_count
 
-def analyze_set(set_name, images_dir, labels_dir):
-    """Analyze a specific dataset set (train/val/test)"""
-    if os.path.exists(images_dir) and os.path.exists(labels_dir):
-        image_count = count_files(images_dir, ".jpg") + count_files(images_dir, ".png")
-        label_count = count_files(labels_dir, ".txt")
-        
-        # Count annotated images by checking for corresponding .txt files in labels_dir
-        annotated_count = count_annotated_images(images_dir, labels_dir)
-        
-        print(f"\n{set_name} set analysis:")
-        print(f"  Images: {image_count}")
-        print(f"  Labels: {label_count}")
-        print(f"  Annotated images: {annotated_count}")
-        print(f"  Unannotated images: {image_count - annotated_count}")
-        
-        return {
-            'images': image_count,
-            'labels': label_count,
-            'annotated': annotated_count,
-            'unannotated': image_count - annotated_count
-        }
-    return None
 
-# ===== DATA INSTANCES ANALYSIS =====
-
-def analyze_data_instances():
-    """Analyze instances per class for each data split."""
-    data_splits = ['train', 'valid', 'test']
-    
-    # Dictionary to hold counts: subfolder -> class_id -> count
-    stats = defaultdict(lambda: defaultdict(int))
-
-    for split in data_splits:
-        labels_path = resolve_split_dir(split) / 'labels'
-        if not labels_path.exists():
-            print(f"Labels path {labels_path} does not exist.")
-            continue
-        
-        for filename in os.listdir(labels_path):
-            if filename.endswith('.txt'):
-                filepath = labels_path / filename
-                with open(filepath, 'r') as f:
-                    for line in f:
-                        parts = line.strip().split()
-                        if len(parts) >= 5:
-                            class_id = int(float(parts[0]))
-                            stats[split][class_id] += 1
-
-    # Print the stats
-    print("\nStatistics of instances per class for each subfolder:")
-    print("-" * 50)
-    class_ids = sorted({class_id for split in data_splits for class_id in stats[split].keys()})
-    for subfolder in data_splits:
-        print(f"\n{subfolder.upper()}:")
-        total_instances = 0
-        for class_id in class_ids:
-            count = stats[subfolder][class_id]
-            print(f"  {class_name(class_id)}: {count}")
-            total_instances += count
-        print(f"  Total: {total_instances}")
-
-    # Overall stats
-    print("\n" + "=" * 50)
-    print("OVERALL:")
-    overall = defaultdict(int)
-    for subfolder in data_splits:
-        for class_id in stats[subfolder].keys():
-            overall[class_id] += stats[subfolder][class_id]
-
-    for class_id in class_ids:
-        print(f"  {class_name(class_id)}: {overall[class_id]}")
-    print(f"  Total: {sum(overall.values())}")
-
-    return stats, overall
+def analyze_set(images_dir, labels_dir):
+    """Analyze a specific dataset split (images/labels/annotation coverage)."""
+    if not (os.path.exists(images_dir) and os.path.exists(labels_dir)):
+        return None
+    image_count = count_files(images_dir, ".jpg") + count_files(images_dir, ".png")
+    label_count = count_files(labels_dir, ".txt")
+    annotated_count = count_annotated_images(images_dir, labels_dir)
+    return {
+        "images": image_count,
+        "labels": label_count,
+        "annotated": annotated_count,
+        "unannotated": image_count - annotated_count,
+    }
 
 
-# ===== BOUNDING BOX ANALYSIS =====
+def analyze_image_file_sizes():
+    """Analyze file sizes (KB) of all images in the dataset."""
+    all_sizes = []
+    for split in SPLITS:
+        images_dir = resolve_split_dir(split) / "images"
+        if images_dir.exists():
+            for filename in os.listdir(images_dir):
+                if filename.lower().endswith((".jpg", ".jpeg", ".png")):
+                    all_sizes.append(os.path.getsize(images_dir / filename) / 1024)
+    if not all_sizes:
+        return {"min": 0.0, "max": 0.0, "avg": 0.0, "total_files": 0, "sizes_kb": []}
+    return {
+        "min": float(np.min(all_sizes)),
+        "max": float(np.max(all_sizes)),
+        "avg": float(np.mean(all_sizes)),
+        "median": float(np.median(all_sizes)),
+        "total_files": len(all_sizes),
+        "sizes_kb": [round(s, 2) for s in all_sizes],
+    }
+
+
+# ===== INSTANCE / BBOX ANALYSIS =====
 
 def analyze_bounding_boxes(labels_dir):
-    """Analyze bounding box statistics from YOLO format labels."""
-    all_widths = []
-    all_heights = []
-    all_areas = []
-    all_aspect_ratios = []
+    """Analyze bounding-box statistics from YOLO-format labels for one split.
+
+    Also captures object centers and per-image structure (objects per image and
+    class co-occurrence) so downstream figures can show spatial and density
+    distributions.
+    """
+    widths, heights, areas, aspect_ratios, class_ids = [], [], [], [], []
+    x_centers, y_centers = [], []
     class_counts = defaultdict(int)
-    
-    total_boxes = 0
-    
+    objects_per_image = []
+    cooccurrence = defaultdict(int)  # (class_a, class_b) with a <= b -> count
+
     for filename in os.listdir(labels_dir):
-        if filename.endswith('.txt'):
-            filepath = labels_dir / filename if isinstance(labels_dir, Path) else os.path.join(labels_dir, filename)
-            with open(filepath, 'r') as f:
-                for line in f:
-                    parts = line.strip().split()
-                    if len(parts) >= 5:
-                        class_id = int(float(parts[0]))
-                        x_center = float(parts[1])
-                        y_center = float(parts[2])
-                        width = float(parts[3])
-                        height = float(parts[4])
-                        
-                        all_widths.append(width)
-                        all_heights.append(height)
-                        all_areas.append(width * height)
-                        all_aspect_ratios.append(width / height if height > 0 else 1.0)
-                        
-                        class_counts[class_id] += 1
-                        total_boxes += 1
-    
+        if not filename.endswith(".txt"):
+            continue
+        image_classes = []
+        with open(labels_dir / filename, "r") as f:
+            for line in f:
+                parts = line.strip().split()
+                if len(parts) >= 5:
+                    class_id = int(float(parts[0]))
+                    x_center = float(parts[1])
+                    y_center = float(parts[2])
+                    width = float(parts[3])
+                    height = float(parts[4])
+                    widths.append(width)
+                    heights.append(height)
+                    x_centers.append(x_center)
+                    y_centers.append(y_center)
+                    areas.append(width * height)
+                    aspect_ratios.append(width / height if height > 0 else 1.0)
+                    class_ids.append(class_id)
+                    class_counts[class_id] += 1
+                    image_classes.append(class_id)
+        if image_classes:
+            objects_per_image.append(len(image_classes))
+            present = sorted(set(image_classes))
+            for i, a in enumerate(present):
+                for b in present[i:]:
+                    cooccurrence[(a, b)] += 1
+
     return {
-        'widths': all_widths,
-        'heights': all_heights,
-        'areas': all_areas,
-        'aspect_ratios': all_aspect_ratios,
-        'class_counts': class_counts,
-        'total_boxes': total_boxes
+        "widths": widths,
+        "heights": heights,
+        "x_centers": x_centers,
+        "y_centers": y_centers,
+        "areas": areas,
+        "aspect_ratios": aspect_ratios,
+        "class_ids": class_ids,
+        "class_counts": dict(class_counts),
+        "objects_per_image": objects_per_image,
+        "cooccurrence": {f"{a},{b}": c for (a, b), c in cooccurrence.items()},
+        "total_boxes": len(widths),
     }
+
 
 def calc_stats(data):
-    """Calculate basic statistics for a list of data."""
+    """Basic descriptive statistics for a list of values."""
     if not data:
-        return {'mean': 0, 'std': 0, 'min': 0, 'max': 0, 'median': 0}
+        return {"mean": 0.0, "std": 0.0, "min": 0.0, "max": 0.0, "median": 0.0}
     return {
-        'mean': np.mean(data),
-        'std': np.std(data),
-        'min': np.min(data),
-        'max': np.max(data),
-        'median': np.median(data)
+        "mean": float(np.mean(data)),
+        "std": float(np.std(data)),
+        "min": float(np.min(data)),
+        "max": float(np.max(data)),
+        "median": float(np.median(data)),
     }
 
-def comprehensive_bbox_analysis():
-    """Perform comprehensive bounding box analysis across all splits."""
-    splits = ['train', 'valid', 'test']
-    all_stats = {}
-    
-    for split in splits:
-        labels_path = resolve_split_dir(split) / 'labels'
+
+# ===== REPORT ASSEMBLY =====
+
+def build_report():
+    """Run the full analysis and return (report_dict, raw_arrays)."""
+    class_ids_sorted = sorted(range(len(CLASS_NAMES)))
+
+    # --- Split-level image/annotation counts ---
+    split_stats = {}
+    for split in SPLITS:
+        d = resolve_split_dir(split)
+        split_stats[split] = analyze_set(d / "images", d / "labels")
+
+    total_images = sum(s["images"] for s in split_stats.values() if s)
+    total_annotated = sum(s["annotated"] for s in split_stats.values() if s)
+
+    # --- Instances per class, per split ---
+    instances_by_split = {}
+    for split in SPLITS:
+        counts = defaultdict(int)
+        labels_path = resolve_split_dir(split) / "labels"
         if labels_path.exists():
-            stats = analyze_bounding_boxes(labels_path)
-            all_stats[split] = stats
+            for filename in os.listdir(labels_path):
+                if filename.endswith(".txt"):
+                    with open(labels_path / filename, "r") as f:
+                        for line in f:
+                            parts = line.strip().split()
+                            if len(parts) >= 5:
+                                counts[int(float(parts[0]))] += 1
+        instances_by_split[split] = {cid: counts[cid] for cid in class_ids_sorted}
 
-    # Combine all splits for overall statistics
-    combined_widths = []
-    combined_heights = []
-    combined_areas = []
-    combined_aspect_ratios = []
-    total_class_counts = defaultdict(int)
-
-    for split_stats in all_stats.values():
-        combined_widths.extend(split_stats['widths'])
-        combined_heights.extend(split_stats['heights'])
-        combined_areas.extend(split_stats['areas'])
-        combined_aspect_ratios.extend(split_stats['aspect_ratios'])
-        for class_id, count in split_stats['class_counts'].items():
-            total_class_counts[class_id] += count
-
-    # Calculate statistics
-    width_stats = calc_stats(combined_widths)
-    height_stats = calc_stats(combined_heights)
-    area_stats = calc_stats(combined_areas)
-    aspect_ratio_stats = calc_stats(combined_aspect_ratios)
-
-    print("\n=== BOUNDING BOX ANALYSIS ===")
-    print(f"Total bounding boxes: {len(combined_widths)}")
-    print(f"Class distribution:")
-    if combined_widths:
-        for class_id in sorted(total_class_counts.keys()):
-            pct = total_class_counts[class_id] / len(combined_widths) * 100
-            print(f"  {class_name(class_id)} ({class_id}): {total_class_counts[class_id]} ({pct:.1f}%)")
-    else:
-        print("  No data")
-
-    print(f"\nBounding Box Width (normalized):")
-    print(f"  Mean: {width_stats['mean']:.3f} ± {width_stats['std']:.3f}")
-    print(f"  Range: {width_stats['min']:.3f} - {width_stats['max']:.3f}")
-    print(f"  Median: {width_stats['median']:.3f}")
-
-    print(f"\nBounding Box Height (normalized):")
-    print(f"  Mean: {height_stats['mean']:.3f} ± {height_stats['std']:.3f}")
-    print(f"  Range: {height_stats['min']:.3f} - {height_stats['max']:.3f}")
-    print(f"  Median: {height_stats['median']:.3f}")
-
-    print(f"\nBounding Box Area (normalized):")
-    print(f"  Mean: {area_stats['mean']:.3f} ± {area_stats['std']:.3f}")
-    print(f"  Range: {area_stats['min']:.3f} - {area_stats['max']:.3f}")
-    print(f"  Median: {area_stats['median']:.3f}")
-
-    print(f"\nAspect Ratio (width/height):")
-    print(f"  Mean: {aspect_ratio_stats['mean']:.3f} ± {aspect_ratio_stats['std']:.3f}")
-    print(f"  Range: {aspect_ratio_stats['min']:.3f} - {aspect_ratio_stats['max']:.3f}")
-    print(f"  Median: {aspect_ratio_stats['median']:.3f}")
-
-    # Print per-split statistics
-    print(f"\n=== PER-SPLIT BBOX STATISTICS ===")
-    for split in splits:
-        if split in all_stats:
-            stats = all_stats[split]
-            print(f"\n{split.upper()} set:")
-            print(f"  Total boxes: {stats['total_boxes']}")
-            for class_id in sorted(stats['class_counts'].keys()):
-                print(f"  {class_name(class_id)} ({class_id}): {stats['class_counts'][class_id]}")
-            if stats['aspect_ratios']:
-                split_ar_stats = calc_stats(stats['aspect_ratios'])
-                print(f"  Avg aspect ratio: {split_ar_stats['mean']:.3f}")
-    
-    # Return structured stats for LaTeX generation
-    return {
-        'width': width_stats,
-        'height': height_stats,
-        'area': area_stats,
-        'aspect_ratio': aspect_ratio_stats
+    overall_instances = {
+        cid: sum(instances_by_split[s][cid] for s in SPLITS) for cid in class_ids_sorted
     }
+    total_instances = sum(overall_instances.values())
+
+    # --- Bounding boxes ---
+    bbox_by_split = {}
+    for split in SPLITS:
+        labels_path = resolve_split_dir(split) / "labels"
+        if labels_path.exists():
+            bbox_by_split[split] = analyze_bounding_boxes(labels_path)
+
+    raw = {"widths": [], "heights": [], "x_centers": [], "y_centers": [],
+           "areas": [], "aspect_ratios": [], "class_ids": [], "objects_per_image": []}
+    for split_stats_bbox in bbox_by_split.values():
+        for key in raw:
+            raw[key].extend(split_stats_bbox[key])
+
+    # Combined class co-occurrence across splits.
+    cooccurrence = defaultdict(int)
+    for s in bbox_by_split.values():
+        for key, count in s["cooccurrence"].items():
+            cooccurrence[key] += count
+    raw["cooccurrence"] = dict(cooccurrence)
+
+    bbox_summary = {
+        "total_boxes": len(raw["widths"]),
+        "width": calc_stats(raw["widths"]),
+        "height": calc_stats(raw["heights"]),
+        "area": calc_stats(raw["areas"]),
+        "aspect_ratio": calc_stats(raw["aspect_ratios"]),
+        "objects_per_image": calc_stats(raw["objects_per_image"]),
+        "per_split": {
+            split: {
+                "total_boxes": s["total_boxes"],
+                "class_counts": {cid: s["class_counts"].get(cid, 0) for cid in class_ids_sorted},
+                "aspect_ratio": calc_stats(s["aspect_ratios"]),
+                "objects_per_image": calc_stats(s["objects_per_image"]),
+            }
+            for split, s in bbox_by_split.items()
+        },
+    }
+
+    file_size_stats = analyze_image_file_sizes()
+
+    def pct(n, d):
+        return round(n / d * 100, 2) if d else 0.0
+
+    report = {
+        "dataset_overview": {
+            "total_images": total_images,
+            "total_annotations": total_instances,
+            "images_with_annotations": total_annotated,
+            "background_images": total_images - total_annotated,
+            "num_classes": len(CLASS_NAMES),
+            "class_names": CLASS_NAMES,
+            "image_format": "JPEG",
+            "annotation_format": "YOLO (normalized coordinates)",
+            "original_resolution": "960 x 640 pixels",
+            "training_resolution": "640 x 640 pixels (resized)",
+            "aspect_ratio": "3:2 (1.5:1)",
+            "color_space": "RGB",
+            "dataset_type": "Object Detection",
+            "file_size_kb": {
+                "min": round(file_size_stats["min"], 1),
+                "max": round(file_size_stats["max"], 1),
+                "avg": round(file_size_stats["avg"], 1),
+                "median": round(file_size_stats.get("median", 0.0), 1),
+                "total_files": file_size_stats["total_files"],
+            },
+        },
+        "splits": {
+            split: {
+                **(split_stats[split] or {"images": 0, "labels": 0, "annotated": 0, "unannotated": 0}),
+                "instances": instances_by_split[split],
+                "total_instances": sum(instances_by_split[split].values()),
+                "image_pct": pct(split_stats[split]["images"] if split_stats[split] else 0, total_images),
+                "instance_pct": pct(sum(instances_by_split[split].values()), total_instances),
+            }
+            for split in SPLITS
+        },
+        "class_distribution": {
+            class_name(cid): {
+                "class_id": cid,
+                "count": overall_instances[cid],
+                "pct": pct(overall_instances[cid], total_instances),
+                "color": class_color(cid),
+            }
+            for cid in class_ids_sorted
+        },
+        "bounding_boxes": bbox_summary,
+    }
+    return report, raw
+
+
+# ===== JSON OUTPUT =====
+
+def write_json_report(report):
+    output_file = DATA_DIR / "dataset_analysis_report.json"
+    with open(output_file, "w") as f:
+        json.dump(report, f, indent=2)
+    return output_file
+
+
+# ===== FIGURES =====
+
+def _apply_style():
+    import matplotlib.pyplot as plt
+
+    plt.rcParams.update({
+        "figure.facecolor": "#fcfcfb",
+        "axes.facecolor": "#fcfcfb",
+        "savefig.facecolor": "#fcfcfb",
+        "font.family": "sans-serif",
+        "font.sans-serif": ["DejaVu Sans"],
+        "font.size": 11,
+        "text.color": "#0b0b0b",
+        "axes.edgecolor": "#c3c2b7",
+        "axes.labelcolor": "#52514e",
+        "axes.titlecolor": "#0b0b0b",
+        "axes.titlesize": 13,
+        "axes.titleweight": "bold",
+        "axes.grid": True,
+        "grid.color": "#e1e0d9",
+        "grid.linewidth": 0.8,
+        "xtick.color": "#898781",
+        "ytick.color": "#898781",
+        "xtick.labelcolor": "#52514e",
+        "ytick.labelcolor": "#52514e",
+        "axes.spines.top": False,
+        "axes.spines.right": False,
+    })
+
+
+def _save(fig, name, data):
+    """Save a figure as PNG plus a companion JSON of the plotted data."""
+    png_path = DATAVIZ_DIR / f"{name}.png"
+    json_path = DATAVIZ_DIR / f"{name}.json"
+    fig.savefig(png_path, dpi=200, bbox_inches="tight")
+    with open(json_path, "w") as f:
+        json.dump(data, f, indent=2)
+    return png_path
+
+
+def generate_figures(report, raw):
+    """Render all figures + companion JSON into data/dataviz/."""
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    DATAVIZ_DIR.mkdir(parents=True, exist_ok=True)
+    _apply_style()
+
+    cd = report["class_distribution"]
+    names = list(cd.keys())
+    counts = [cd[n]["count"] for n in names]
+    colors = [cd[n]["color"] for n in names]
+    figures = []
+
+    # 1. Overall class distribution (magnitude -> single-hue, sorted desc, direct labels)
+    order = np.argsort(counts)[::-1]
+    o_names = [names[i] for i in order]
+    o_counts = [counts[i] for i in order]
+    o_colors = [colors[i] for i in order]
+    fig, ax = plt.subplots(figsize=(8, 4.5))
+    bars = ax.barh(o_names[::-1], o_counts[::-1], color=o_colors[::-1], height=0.62)
+    ax.set_xlabel("Instances")
+    ax.set_title("Class distribution (all splits)")
+    ax.xaxis.grid(True)
+    ax.yaxis.grid(False)
+    total = sum(counts)
+    for b, c in zip(bars, o_counts[::-1]):
+        ax.text(b.get_width() + total * 0.01, b.get_y() + b.get_height() / 2,
+                f"{c}  ({c/total*100:.1f}%)", va="center", ha="left",
+                color="#52514e", fontsize=10)
+    ax.set_xlim(0, max(counts) * 1.18)
+    figures.append(_save(fig, "class_distribution_overall",
+                         {"chart": "horizontal_bar", "measure": "instances",
+                          "classes": o_names, "counts": o_counts, "total": total}))
+    plt.close(fig)
+
+    # 2. Class distribution by split (grouped bars; series = split)
+    split_palette = {"train": "#2a78d6", "valid": "#1baf7a", "test": "#eda100"}
+    x = np.arange(len(names))
+    w = 0.26
+    fig, ax = plt.subplots(figsize=(9, 4.8))
+    by_split_data = {}
+    for i, split in enumerate(SPLITS):
+        vals = [report["splits"][split]["instances"][cd[n]["class_id"]] for n in names]
+        by_split_data[split] = vals
+        ax.bar(x + (i - 1) * w, vals, w, label=split, color=split_palette[split])
+    ax.set_xticks(x)
+    ax.set_xticklabels(names, rotation=20, ha="right")
+    ax.set_ylabel("Instances")
+    ax.set_title("Class distribution by split")
+    ax.yaxis.grid(True)
+    ax.xaxis.grid(False)
+    ax.legend(frameon=False, title="Split")
+    figures.append(_save(fig, "class_distribution_by_split",
+                         {"chart": "grouped_bar", "measure": "instances",
+                          "classes": names, "series": by_split_data}))
+    plt.close(fig)
+
+    # 3. Split distribution — images vs instances share per split
+    img_counts = [report["splits"][s]["images"] for s in SPLITS]
+    inst_counts = [report["splits"][s]["total_instances"] for s in SPLITS]
+    fig, axes = plt.subplots(1, 2, figsize=(9, 4.2))
+    for ax, vals, title in ((axes[0], img_counts, "Images"), (axes[1], inst_counts, "Instances")):
+        b = ax.bar(SPLITS, vals, color=[split_palette[s] for s in SPLITS], width=0.6)
+        ax.set_title(title)
+        ax.yaxis.grid(True)
+        ax.xaxis.grid(False)
+        tot = sum(vals)
+        for bar, v in zip(b, vals):
+            ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + tot * 0.01,
+                    f"{v}\n{v/tot*100:.1f}%", ha="center", va="bottom",
+                    color="#52514e", fontsize=9)
+        ax.set_ylim(0, max(vals) * 1.18)
+    fig.suptitle("Train / validation / test split", fontsize=13, fontweight="bold", color="#0b0b0b")
+    figures.append(_save(fig, "split_distribution",
+                         {"chart": "bar", "splits": SPLITS,
+                          "images": img_counts, "instances": inst_counts}))
+    plt.close(fig)
+
+    # 4. Annotation coverage (stacked: annotated vs background per split)
+    annotated = [report["splits"][s]["annotated"] for s in SPLITS]
+    background = [report["splits"][s]["unannotated"] for s in SPLITS]
+    fig, ax = plt.subplots(figsize=(7.5, 4.4))
+    ax.bar(SPLITS, annotated, color="#2a78d6", label="Annotated", width=0.55)
+    ax.bar(SPLITS, background, bottom=annotated, color="#e34948", label="Background", width=0.55)
+    ax.set_ylabel("Images")
+    ax.set_title("Annotation coverage per split")
+    ax.yaxis.grid(True)
+    ax.xaxis.grid(False)
+    ax.legend(frameon=False)
+    for i, s in enumerate(SPLITS):
+        ax.text(i, annotated[i] / 2, str(annotated[i]), ha="center", va="center",
+                color="#ffffff", fontsize=10, fontweight="bold")
+        if background[i] > 0:
+            ax.text(i, annotated[i] + background[i] + max(annotated) * 0.01,
+                    str(background[i]), ha="center", va="bottom", color="#52514e", fontsize=9)
+    figures.append(_save(fig, "annotation_coverage",
+                         {"chart": "stacked_bar", "splits": SPLITS,
+                          "annotated": annotated, "background": background}))
+    plt.close(fig)
+
+    # 5. Bounding-box dimension distributions (small multiples of histograms)
+    dims = [("widths", "Width (norm.)"), ("heights", "Height (norm.)"),
+            ("areas", "Area (norm.)"), ("aspect_ratios", "Aspect ratio (w/h)")]
+    fig, axes = plt.subplots(2, 2, figsize=(10, 7))
+    hist_data = {}
+    for ax, (key, label) in zip(axes.ravel(), dims):
+        vals = np.array(raw[key], dtype=float)
+        if key == "aspect_ratios":  # clip long tail for readability
+            vals = vals[vals <= np.percentile(vals, 99)]
+        n, edges = np.histogram(vals, bins=30)
+        ax.hist(vals, bins=30, color="#2a78d6", edgecolor="#fcfcfb", linewidth=0.5)
+        med = float(np.median(raw[key]))
+        ax.axvline(med, color="#e34948", linewidth=1.5, linestyle="--")
+        ax.text(med, ax.get_ylim()[1] * 0.92, f"median {med:.2f}", color="#e34948",
+                fontsize=9, ha="left" if med < np.mean(ax.get_xlim()) else "right")
+        ax.set_title(label)
+        ax.set_ylabel("Count")
+        ax.yaxis.grid(True)
+        ax.xaxis.grid(False)
+        hist_data[key] = {"bin_edges": [round(e, 4) for e in edges.tolist()],
+                          "counts": n.tolist(), "median": round(med, 4)}
+    fig.suptitle("Bounding-box dimension distributions (normalized)",
+                 fontsize=13, fontweight="bold", color="#0b0b0b")
+    fig.tight_layout(rect=[0, 0, 1, 0.97])
+    figures.append(_save(fig, "bbox_dimension_distributions",
+                         {"chart": "histogram_small_multiples", "histograms": hist_data}))
+    plt.close(fig)
+
+    # 6. Bounding-box width vs height scatter, colored by class (identity -> categorical)
+    fig, ax = plt.subplots(figsize=(7.5, 6.5))
+    w_arr = np.array(raw["widths"])
+    h_arr = np.array(raw["heights"])
+    c_arr = np.array(raw["class_ids"])
+    for cid in sorted(set(raw["class_ids"])):
+        m = c_arr == cid
+        ax.scatter(w_arr[m], h_arr[m], s=18, alpha=0.6, color=class_color(cid),
+                   edgecolors="none", label=class_name(cid))
+    ax.set_xlabel("Width (normalized)")
+    ax.set_ylabel("Height (normalized)")
+    ax.set_title("Bounding-box width vs height by class")
+    ax.legend(frameon=False, markerscale=1.5, fontsize=9)
+    ax.grid(True)
+    figures.append(_save(fig, "bbox_width_height_scatter",
+                         {"chart": "scatter", "x": "width", "y": "height",
+                          "points_by_class": {
+                              class_name(cid): {
+                                  "width": [round(float(v), 4) for v in w_arr[c_arr == cid]],
+                                  "height": [round(float(v), 4) for v in h_arr[c_arr == cid]],
+                              } for cid in sorted(set(raw["class_ids"]))}}))
+    plt.close(fig)
+
+    # 7. Image file-size distribution
+    sizes = report["dataset_overview"]["file_size_kb"]
+    all_sizes = analyze_image_file_sizes()["sizes_kb"]
+    fig, ax = plt.subplots(figsize=(8, 4.5))
+    n, edges, _ = ax.hist(all_sizes, bins=30, color="#1baf7a", edgecolor="#fcfcfb", linewidth=0.5)
+    ax.axvline(sizes["avg"], color="#e34948", linewidth=1.5, linestyle="--")
+    ax.text(sizes["avg"], ax.get_ylim()[1] * 0.92, f"avg {sizes['avg']:.0f} KB",
+            color="#e34948", fontsize=9, ha="left")
+    ax.set_xlabel("File size (KB)")
+    ax.set_ylabel("Images")
+    ax.set_title("Image file-size distribution")
+    ax.yaxis.grid(True)
+    ax.xaxis.grid(False)
+    figures.append(_save(fig, "image_file_size_distribution",
+                         {"chart": "histogram", "unit": "KB",
+                          "bin_edges": [round(e, 2) for e in edges.tolist()],
+                          "counts": n.astype(int).tolist(),
+                          "min": sizes["min"], "max": sizes["max"], "avg": sizes["avg"]}))
+    plt.close(fig)
+
+    # 8. Object center spatial heatmap (where objects sit in the frame)
+    from matplotlib.colors import LinearSegmentedColormap
+    blue_ramp = LinearSegmentedColormap.from_list(
+        "viz_blue", ["#fcfcfb", "#cde2fb", "#86b6ef", "#3987e5", "#184f95", "#0d366b"])
+    xc = np.array(raw["x_centers"])
+    yc = np.array(raw["y_centers"])
+    heat, xedges, yedges = np.histogram2d(xc, yc, bins=24, range=[[0, 1], [0, 1]])
+    fig, ax = plt.subplots(figsize=(7.2, 5.2))
+    im = ax.imshow(heat.T, origin="upper", extent=[0, 1, 1, 0], aspect="auto",
+                   cmap=blue_ramp, interpolation="nearest")
+    ax.set_xlabel("x center (normalized)")
+    ax.set_ylabel("y center (normalized)")
+    ax.set_title("Object center spatial distribution")
+    ax.grid(False)
+    cbar = fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
+    cbar.set_label("Objects", color="#52514e")
+    cbar.outline.set_edgecolor("#c3c2b7")
+    figures.append(_save(fig, "object_center_heatmap",
+                         {"chart": "heatmap_2d", "x": "x_center", "y": "y_center",
+                          "x_edges": [round(e, 4) for e in xedges.tolist()],
+                          "y_edges": [round(e, 4) for e in yedges.tolist()],
+                          "counts": heat.astype(int).tolist()}))
+    plt.close(fig)
+
+    # 9. Objects-per-image distribution (annotation density)
+    opi = np.array(raw["objects_per_image"])
+    max_opi = int(opi.max())
+    bins = np.arange(0.5, max_opi + 1.5, 1)
+    n, _ = np.histogram(opi, bins=bins)
+    fig, ax = plt.subplots(figsize=(8.5, 4.5))
+    ax.bar(range(1, max_opi + 1), n, color="#2a78d6", width=0.85)
+    med = float(np.median(opi))
+    ax.axvline(med, color="#e34948", linewidth=1.5, linestyle="--")
+    ax.text(med, ax.get_ylim()[1] * 0.92, f"median {med:.0f}", color="#e34948",
+            fontsize=9, ha="left")
+    ax.set_xlabel("Objects per image")
+    ax.set_ylabel("Images")
+    ax.set_title("Annotation density (objects per image)")
+    ax.yaxis.grid(True)
+    ax.xaxis.grid(False)
+    figures.append(_save(fig, "objects_per_image",
+                         {"chart": "histogram", "objects_per_image": list(range(1, max_opi + 1)),
+                          "image_counts": n.tolist(), "median": round(med, 2),
+                          "mean": round(float(opi.mean()), 2)}))
+    plt.close(fig)
+
+    # 10. Bounding-box area by class (distribution / size profile per class)
+    c_arr = np.array(raw["class_ids"])
+    area_arr = np.array(raw["areas"])
+    present_ids = sorted(set(raw["class_ids"]))
+    area_by_class = [area_arr[c_arr == cid] for cid in present_ids]
+    fig, ax = plt.subplots(figsize=(9, 5))
+    bp = ax.boxplot(area_by_class, vert=True, patch_artist=True, widths=0.6,
+                    showfliers=True, flierprops=dict(marker="o", markersize=3,
+                    markerfacecolor="#898781", markeredgecolor="none", alpha=0.4))
+    for patch, cid in zip(bp["boxes"], present_ids):
+        patch.set_facecolor(class_color(cid))
+        patch.set_alpha(0.85)
+        patch.set_edgecolor("#fcfcfb")
+    for element in ("whiskers", "caps"):
+        for line in bp[element]:
+            line.set_color("#898781")
+    for line in bp["medians"]:
+        line.set_color("#0b0b0b")
+        line.set_linewidth(1.5)
+    ax.set_xticklabels([class_name(cid) for cid in present_ids], rotation=20, ha="right")
+    ax.set_ylabel("Area (normalized)")
+    ax.set_title("Bounding-box area by class")
+    ax.yaxis.grid(True)
+    ax.xaxis.grid(False)
+    figures.append(_save(fig, "bbox_area_by_class",
+                         {"chart": "boxplot", "measure": "area",
+                          "classes": [class_name(cid) for cid in present_ids],
+                          "stats_by_class": {
+                              class_name(cid): calc_stats(list(area_arr[c_arr == cid]))
+                              for cid in present_ids}}))
+    plt.close(fig)
+
+    # 11. Class composition across splits (100% stacked — stratification check)
+    fig, ax = plt.subplots(figsize=(9, 5))
+    left = np.zeros(len(names))
+    comp_data = {}
+    for split in SPLITS:
+        vals = np.array([report["splits"][split]["instances"][cd[n_]["class_id"]] for n_ in names], dtype=float)
+        comp_data[split] = vals
+    totals = sum(comp_data[s] for s in SPLITS)
+    totals[totals == 0] = 1  # avoid div-by-zero
+    for split in SPLITS:
+        frac = comp_data[split] / totals * 100
+        ax.barh(names, frac, left=left, color=split_palette[split], label=split, height=0.62)
+        for i, (f_val, l_val) in enumerate(zip(frac, left)):
+            if f_val >= 6:
+                ax.text(l_val + f_val / 2, i, f"{f_val:.0f}%", ha="center", va="center",
+                        color="#ffffff", fontsize=8, fontweight="bold")
+        left += frac
+    ax.set_xlabel("Share of instances (%)", labelpad=8)
+    ax.set_title("Class composition across splits")
+    ax.set_xlim(0, 100)
+    ax.xaxis.grid(True)
+    ax.yaxis.grid(False)
+    ax.legend(frameon=False, ncol=3, loc="upper center", bbox_to_anchor=(0.5, -0.13))
+    fig.subplots_adjust(bottom=0.24)
+    figures.append(_save(fig, "class_split_composition",
+                         {"chart": "stacked_bar_100", "classes": names,
+                          "split_percent": {s: (comp_data[s] / totals * 100).round(2).tolist() for s in SPLITS},
+                          "split_counts": {s: comp_data[s].astype(int).tolist() for s in SPLITS}}))
+    plt.close(fig)
+
+    # 12. Class co-occurrence matrix (which pole types share an image)
+    k = len(names)
+    matrix = np.zeros((k, k), dtype=int)
+    for key, count in raw["cooccurrence"].items():
+        a, b = (int(v) for v in key.split(","))
+        matrix[a, b] = count
+        matrix[b, a] = count
+    fig, ax = plt.subplots(figsize=(7.5, 6.5))
+    im = ax.imshow(matrix, cmap=blue_ramp)
+    ax.set_xticks(range(k))
+    ax.set_yticks(range(k))
+    ax.set_xticklabels(names, rotation=35, ha="right")
+    ax.set_yticklabels(names)
+    ax.set_title("Class co-occurrence (images sharing both classes)")
+    ax.grid(False)
+    thresh = matrix.max() * 0.55 if matrix.max() else 1
+    for i in range(k):
+        for j in range(k):
+            ax.text(j, i, str(matrix[i, j]), ha="center", va="center", fontsize=9,
+                    color="#ffffff" if matrix[i, j] > thresh else "#0b0b0b")
+    cbar = fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
+    cbar.set_label("Images", color="#52514e")
+    cbar.outline.set_edgecolor("#c3c2b7")
+    figures.append(_save(fig, "class_cooccurrence",
+                         {"chart": "matrix", "classes": names,
+                          "note": "diagonal = images containing the class; off-diagonal = images containing both",
+                          "matrix": matrix.tolist()}))
+    plt.close(fig)
+
+    return figures
+
 
 def main():
-    """Main function to run comprehensive dataset analysis and save output to text file."""
-    
-    # Capture all output to a string buffer
-    output_buffer = io.StringIO()
-    
-    with redirect_stdout(output_buffer):
-        print("=" * 60)
-        print("COMPREHENSIVE DATASET ANALYSIS")
-        print("=" * 60)
-        
-        # 1. Data Schema Analysis
-        print("\n1. DATA SCHEMA ANALYSIS")
-        print("-" * 30)
-        base_file_count = count_files(DATA_DIR)
-        print(f"Data ({base_file_count} files):")
-        print_tree(DATA_DIR)
+    report, raw = build_report()
+    json_path = write_json_report(report)
+    figures = generate_figures(report, raw)
 
-        # Analyze each dataset set
-        train_stats = analyze_set("Train", TRAIN_IMAGES_DIR, TRAIN_LABELS_DIR)
-        val_stats = analyze_set("Validation", VAL_IMAGES_DIR, VAL_LABELS_DIR)
-        test_stats = analyze_set("Test", TEST_IMAGES_DIR, TEST_LABELS_DIR)
-        
-        split_stats = {
-            'train': train_stats,
-            'valid': val_stats,
-            'test': test_stats
-        }
+    print(f"JSON report saved to: {json_path}")
+    print(f"Generated {len(figures)} figures in: {DATAVIZ_DIR}")
+    for p in figures:
+        print(f"  - {p.name}  (+ {p.stem}.json)")
 
-        # Overall statistics
-        print("\nOverall statistics:")
-        total_images = 0
-        total_annotated = 0
-        
-        if train_stats:
-            total_images += train_stats['images']
-            total_annotated += train_stats['annotated']
-        if val_stats:
-            total_images += val_stats['images']
-            total_annotated += val_stats['annotated']
-        if test_stats:
-            total_images += test_stats['images']
-            total_annotated += test_stats['annotated']
-        
-        print(f"Images with annotations: {total_annotated}")
-        print(f"Background without annotations: {total_images - total_annotated}")
-
-        # 2. File Size Analysis
-        print("\n2. IMAGE FILE SIZE ANALYSIS")
-        print("-" * 30)
-        file_size_stats = analyze_image_file_sizes()
-        print(f"File size statistics (KB):")
-        print(f"  Min: {file_size_stats['min']:.0f}")
-        print(f"  Max: {file_size_stats['max']:.0f}")
-        print(f"  Average: {file_size_stats['avg']:.0f}")
-        print(f"  Total files analyzed: {file_size_stats['total_files']}")
-
-        # 3. Data Instances Analysis
-        print("\n3. DATA INSTANCES ANALYSIS")
-        print("-" * 30)
-        stats, overall = analyze_data_instances()
-
-        # 4. Bounding Box Analysis
-        print("\n4. BOUNDING BOX ANALYSIS")
-        print("-" * 30)
-        bbox_stats = comprehensive_bbox_analysis()
-
-        # 5. Summary Statistics
-        print("\n5. DATASET SUMMARY FOR LATEX TABLES")
-        print("-" * 40)
-        
-        # Create instance stats dictionary from current analysis
-        instance_stats = {
-            "dataset_split_instances": {sub: dict(stats[sub]) for sub in ['train', 'valid', 'test']},
-            "overall_dataset_instances": dict(overall),
-            "class_names": CLASS_NAMES
-        }
-        
-        # Print comprehensive summary for manual LaTeX table creation
-        print_dataset_summary(file_size_stats, bbox_stats, instance_stats, split_stats)
-        
-        print("\n" + "=" * 60)
-        print("COMPREHENSIVE ANALYSIS COMPLETE")
-        print("=" * 60)
-    
-    # Get the captured output
-    analysis_output = output_buffer.getvalue()
-    
-    # Save to text file
-    output_file = DATA_DIR / 'dataset_analysis_report.txt'
-    with open(output_file, 'w') as f:
-        f.write(analysis_output)
-    
-    # Also print to console
-    print(analysis_output)
-    print(f"Analysis report saved to: {output_file}")
-
-def print_dataset_summary(file_size_stats, bbox_stats, instance_stats, split_stats):
-    """Print comprehensive dataset summary for LaTeX table creation."""
-    
-    # Calculate totals - use string keys to match the data structure
-    total_images = sum(stats['images'] for stats in split_stats.values() if stats)
-    total_annotations = sum(instance_stats['overall_dataset_instances'].values())
-    
-    print("\n=== DATASET OVERVIEW TABLE DATA ===")
-    print(f"Total images: {total_images}")
-    print(f"Total annotations: {total_annotations:,}")
-    class_summary = ", ".join(class_name(class_id) for class_id in sorted(instance_stats['overall_dataset_instances'].keys()))
-    print(f"Classes: {len(instance_stats['overall_dataset_instances'])} ({class_summary})")
-    print(f"Image format: JPEG")
-    print(f"Annotation format: YOLO (normalized coordinates)")
-    print(f"Original resolution: 960 × 640 pixels")
-    print(f"Training resolution: 640 × 640 pixels (resized)")
-    print(f"Aspect ratio: 3:2 (1.5:1)")
-    print(f"Color space: RGB")
-    print(f"Compression: Variable quality")
-    print(f"File size (KB): Min: {file_size_stats['min']:.0f}, Max: {file_size_stats['max']:.0f}, Avg: {file_size_stats['avg']:.0f}")
-    print(f"Dataset type: Object Detection")
-    
-    print("\n=== BOUNDING BOX STATISTICS TABLE DATA ===")
-    print(f"Width (normalized):")
-    print(f"  Mean ± Std: {bbox_stats['width']['mean']:.3f} ± {bbox_stats['width']['std']:.3f}")
-    print(f"  Median: {bbox_stats['width']['median']:.3f}")
-    print(f"  Range: {bbox_stats['width']['min']:.3f} - {bbox_stats['width']['max']:.3f}")
-    
-    print(f"Height (normalized):")
-    print(f"  Mean ± Std: {bbox_stats['height']['mean']:.3f} ± {bbox_stats['height']['std']:.3f}")
-    print(f"  Median: {bbox_stats['height']['median']:.3f}")
-    print(f"  Range: {bbox_stats['height']['min']:.3f} - {bbox_stats['height']['max']:.3f}")
-    
-    print(f"Area (normalized):")
-    print(f"  Mean ± Std: {bbox_stats['area']['mean']:.3f} ± {bbox_stats['area']['std']:.3f}")
-    print(f"  Median: {bbox_stats['area']['median']:.3f}")
-    print(f"  Range: {bbox_stats['area']['min']:.3f} - {bbox_stats['area']['max']:.3f}")
-    
-    print(f"Aspect Ratio (width/height):")
-    print(f"  Mean ± Std: {bbox_stats['aspect_ratio']['mean']:.3f} ± {bbox_stats['aspect_ratio']['std']:.3f}")
-    print(f"  Median: {bbox_stats['aspect_ratio']['median']:.3f}")
-    print(f"  Range: {bbox_stats['aspect_ratio']['min']:.3f} - {bbox_stats['aspect_ratio']['max']:.3f}")
-    
-    print("\n=== CLASS DISTRIBUTION TABLE DATA ===")
-    for class_id in sorted(instance_stats['overall_dataset_instances'].keys()):
-        count = instance_stats['overall_dataset_instances'][class_id]
-        pct = (count / total_annotations * 100) if total_annotations > 0 else 0
-        print(f"{class_name(class_id)}: {count} instances ({pct:.1f}%)")
-    print(f"Total: {total_annotations:,} instances (100.0%)")
-    
-    print("\n=== DATA SPLIT DISTRIBUTION TABLE DATA ===")
-    
-    # Calculate split statistics
-    train_images = split_stats['train']['images'] if split_stats['train'] else 0
-    val_images = split_stats['valid']['images'] if split_stats['valid'] else 0
-    test_images = split_stats['test']['images'] if split_stats['test'] else 0
-    
-    train_total = sum(instance_stats['dataset_split_instances']['train'].values())
-    val_total = sum(instance_stats['dataset_split_instances']['valid'].values())
-    test_total = sum(instance_stats['dataset_split_instances']['test'].values())
-    
-    # Calculate percentages
-    train_img_pct = (train_images / total_images * 100) if total_images > 0 else 0
-    val_img_pct = (val_images / total_images * 100) if total_images > 0 else 0
-    test_img_pct = (test_images / total_images * 100) if total_images > 0 else 0
-    
-    train_total_pct = (train_total / total_annotations * 100) if total_annotations > 0 else 0
-    val_total_pct = (val_total / total_annotations * 100) if total_annotations > 0 else 0
-    test_total_pct = (test_total / total_annotations * 100) if total_annotations > 0 else 0
-    
-    print(f"Training split:")
-    print(f"  Images: {train_images} ({train_img_pct:.1f}%)")
-    print(f"  Total instances: {train_total} ({train_total_pct:.1f}%)")
-    print(f"  Class breakdown:")
-    for class_id in sorted(instance_stats['dataset_split_instances']['train'].keys()):
-        count = instance_stats['dataset_split_instances']['train'][class_id]
-        print(f"    {class_name(class_id)}: {count}")
-    
-    print(f"Validation split:")
-    print(f"  Images: {val_images} ({val_img_pct:.1f}%)")
-    print(f"  Total instances: {val_total} ({val_total_pct:.1f}%)")
-    print(f"  Class breakdown:")
-    for class_id in sorted(instance_stats['dataset_split_instances']['valid'].keys()):
-        count = instance_stats['dataset_split_instances']['valid'][class_id]
-        print(f"    {class_name(class_id)}: {count}")
-    
-    print(f"Testing split:")
-    print(f"  Images: {test_images} ({test_img_pct:.1f}%)")
-    print(f"  Total instances: {test_total} ({test_total_pct:.1f}%)")
-    print(f"  Class breakdown:")
-    for class_id in sorted(instance_stats['dataset_split_instances']['test'].keys()):
-        count = instance_stats['dataset_split_instances']['test'][class_id]
-        print(f"    {class_name(class_id)}: {count}")
-    
-    print(f"Total:")
-    print(f"  Images: {total_images} (100%)")
-    print(f"  Total instances: {total_annotations:,} (100%)")
 
 if __name__ == "__main__":
     main()
