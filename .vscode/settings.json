@@ -1,0 +1,6 @@
+{
+  "overleafconnect.sync.enabled": false,
+  "overleafconnect.sync.pullOnOpen": false,
+  "overleafconnect.sync.pushOnSave": false,
+  "overleafconnect.latex.compileOnSave": false
+}
