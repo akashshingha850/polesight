@@ -693,7 +693,115 @@ def generate_figures(report, raw):
                           "matrix": matrix.tolist()}))
     plt.close(fig)
 
+    add_sample_montage(figures, plt)
+
     return figures
+
+
+def _load_intensity_display(path):
+    """Load an image (incl. 16-bit ``I;16`` intensity strips) as a 0-1 float
+    array, contrast-stretched to the 2-98 percentile for legible display."""
+    from PIL import Image
+
+    arr = np.asarray(Image.open(path)).astype(np.float32)
+    if arr.ndim == 3:  # already RGB/multi-channel -> luminance for a uniform look
+        arr = arr[..., :3].mean(axis=2)
+    lo, hi = np.percentile(arr, (2, 98))
+    return np.clip((arr - lo) / (hi - lo + 1e-6), 0.0, 1.0)
+
+
+def _select_sample_images(n=6):
+    """Pick sample images that together cover as many classes as possible,
+    preferring frames with several/varied objects. Returns [(img, label), ...]."""
+    from matplotlib import image as _mpimg  # noqa: F401  (ensures mpl is initialised)
+
+    candidates = []
+    for split in ("train", "valid", "test"):
+        split_dir = resolve_split_dir(split)
+        images_dir, labels_dir = split_dir / "images", split_dir / "labels"
+        if not images_dir.exists():
+            continue
+        for img in sorted(images_dir.iterdir()):
+            if img.suffix.lower() not in (".png", ".jpg", ".jpeg"):
+                continue
+            label = labels_dir / f"{img.stem}.txt"
+            classes = set()
+            if label.exists():
+                for line in label.read_text().splitlines():
+                    parts = line.split()
+                    if parts:
+                        classes.add(int(float(parts[0])))
+            if classes:  # skip background-only frames for the montage
+                candidates.append((img, label, classes))
+
+    chosen, covered = [], set()
+    # Greedy: repeatedly take the frame adding the most uncovered classes.
+    remaining = candidates[:]
+    while remaining and len(chosen) < n:
+        remaining.sort(key=lambda c: (len(c[2] - covered), len(c[2])), reverse=True)
+        img, label, classes = remaining.pop(0)
+        chosen.append((img, label))
+        covered |= classes
+    return chosen
+
+
+def add_sample_montage(figures, plt):
+    """Qualitative Figure 1: real annotated sample frames with drawn boxes."""
+    from matplotlib.patches import Rectangle
+
+    samples = _select_sample_images(n=6)
+    if not samples:
+        return
+
+    n = len(samples)
+    fig, axes = plt.subplots(n, 1, figsize=(10, 1.55 * n + 0.4))
+    if n == 1:
+        axes = [axes]
+
+    used_classes, manifest = set(), []
+    for ax, (img_path, label_path) in zip(axes, samples):
+        disp = _load_intensity_display(img_path)
+        h, w = disp.shape[:2]
+        ax.imshow(disp, cmap="gray", aspect="auto", vmin=0, vmax=1)
+        boxes = []
+        if label_path.exists():
+            for line in label_path.read_text().splitlines():
+                p = line.split()
+                if len(p) < 5:
+                    continue
+                cid = int(float(p[0]))
+                cx, cy, bw, bh = (float(v) for v in p[1:5])
+                x0, y0 = (cx - bw / 2) * w, (cy - bh / 2) * h
+                col = class_color(cid)
+                ax.add_patch(Rectangle((x0, y0), bw * w, bh * h, fill=False,
+                                       edgecolor=col, linewidth=1.6))
+                ax.text(x0 + 1, max(y0 - 2, 6), class_name(cid), fontsize=7,
+                        color="#ffffff", va="bottom",
+                        bbox=dict(boxstyle="square,pad=0.12", fc=col, ec="none"))
+                used_classes.add(cid)
+                boxes.append({"class": class_name(cid), "cx": cx, "cy": cy,
+                              "w": bw, "h": bh})
+        ax.set_xticks([]); ax.set_yticks([])
+        ax.grid(False)
+        for s in ax.spines.values():
+            s.set_edgecolor("#c3c2b7")
+        ax.set_ylabel(img_path.stem, rotation=0, ha="right", va="center",
+                      fontsize=8, color="#898781", labelpad=8)
+        manifest.append({"image": img_path.name, "boxes": boxes})
+
+    axes[0].set_title("Sample annotated frames (intensity, boxes coloured by class)")
+    # Shared class legend
+    handles = [Rectangle((0, 0), 1, 1, fc=class_color(c), ec="none")
+               for c in sorted(used_classes)]
+    labels = [class_name(c) for c in sorted(used_classes)]
+    fig.legend(handles, labels, loc="lower center", ncol=len(labels),
+               frameon=False, fontsize=9, bbox_to_anchor=(0.5, -0.02))
+    fig.tight_layout(rect=(0, 0.03, 1, 1))
+    figures.append(_save(fig, "sample_annotated_frames",
+                         {"chart": "image_montage",
+                          "note": "qualitative examples; boxes in YOLO-normalised coords",
+                          "samples": manifest}))
+    plt.close(fig)
 
 
 def main():
