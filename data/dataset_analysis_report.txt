@@ -62,7 +62,7 @@ Statistics of instances per class for each subfolder:
 --------------------------------------------------
 
 TRAIN:
-  deer_fence_pole: 396
+  fence_pole: 396
   gantry_sign_pole: 108
   light_pole: 850
   power_pole: 4
@@ -70,7 +70,7 @@ TRAIN:
   Total: 1518
 
 VALID:
-  deer_fence_pole: 38
+  fence_pole: 38
   gantry_sign_pole: 14
   light_pole: 115
   power_pole: 2
@@ -78,7 +78,7 @@ VALID:
   Total: 188
 
 TEST:
-  deer_fence_pole: 52
+  fence_pole: 52
   gantry_sign_pole: 17
   light_pole: 112
   power_pole: 1
@@ -87,7 +87,7 @@ TEST:
 
 ==================================================
 OVERALL:
-  deer_fence_pole: 486
+  fence_pole: 486
   gantry_sign_pole: 139
   light_pole: 1077
   power_pole: 7
@@ -100,7 +100,7 @@ OVERALL:
 === BOUNDING BOX ANALYSIS ===
 Total bounding boxes: 1909
 Class distribution:
-  deer_fence_pole (0): 486 (25.5%)
+  fence_pole (0): 486 (25.5%)
   gantry_sign_pole (1): 139 (7.3%)
   light_pole (2): 1077 (56.4%)
   power_pole (3): 7 (0.4%)
@@ -130,7 +130,7 @@ Aspect Ratio (width/height):
 
 TRAIN set:
   Total boxes: 1518
-  deer_fence_pole (0): 396
+  fence_pole (0): 396
   gantry_sign_pole (1): 108
   light_pole (2): 850
   power_pole (3): 4
@@ -139,7 +139,7 @@ TRAIN set:
 
 VALID set:
   Total boxes: 188
-  deer_fence_pole (0): 38
+  fence_pole (0): 38
   gantry_sign_pole (1): 14
   light_pole (2): 115
   power_pole (3): 2
@@ -148,7 +148,7 @@ VALID set:
 
 TEST set:
   Total boxes: 203
-  deer_fence_pole (0): 52
+  fence_pole (0): 52
   gantry_sign_pole (1): 17
   light_pole (2): 112
   power_pole (3): 1
@@ -161,7 +161,7 @@ TEST set:
 === DATASET OVERVIEW TABLE DATA ===
 Total images: 515
 Total annotations: 1,909
-Classes: 5 (deer_fence_pole, gantry_sign_pole, light_pole, power_pole, traffic_pole)
+Classes: 5 (fence_pole, gantry_sign_pole, light_pole, power_pole, traffic_pole)
 Image format: JPEG
 Annotation format: YOLO (normalized coordinates)
 Original resolution: 960 × 640 pixels
@@ -191,19 +191,19 @@ Aspect Ratio (width/height):
   Range: 0.000 - 125.875
 
 === CLASS DISTRIBUTION TABLE DATA ===
-deer_fence_pole: 486 instances (25.5%)
+fence_pole: 486 instances (25.5%)
 gantry_sign_pole: 139 instances (7.3%)
 light_pole: 1077 instances (56.4%)
 power_pole: 7 instances (0.4%)
 traffic_pole: 200 instances (10.5%)
-Total:  instances (100.0%)
+Total: 1,909 instances (100.0%)
 
 === DATA SPLIT DISTRIBUTION TABLE DATA ===
 Training split:
   Images: 412 (80.0%)
   Total instances: 1518 (79.5%)
   Class breakdown:
-    deer_fence_pole: 396
+    fence_pole: 396
     gantry_sign_pole: 108
     light_pole: 850
     power_pole: 4
@@ -212,7 +212,7 @@ Validation split:
   Images: 52 (10.1%)
   Total instances: 188 (9.8%)
   Class breakdown:
-    deer_fence_pole: 38
+    fence_pole: 38
     gantry_sign_pole: 14
     light_pole: 115
     power_pole: 2
@@ -221,7 +221,7 @@ Testing split:
   Images: 51 (9.9%)
   Total instances: 203 (10.6%)
   Class breakdown:
-    deer_fence_pole: 52
+    fence_pole: 52
     gantry_sign_pole: 17
     light_pole: 112
     power_pole: 1
