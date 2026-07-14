@@ -1,0 +1,18 @@
+{
+  "chart": "stacked_bar",
+  "splits": [
+    "train",
+    "valid",
+    "test"
+  ],
+  "annotated": [
+    390,
+    49,
+    48
+  ],
+  "background": [
+    22,
+    3,
+    3
+  ]
+}

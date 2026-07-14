@@ -1,0 +1,56 @@
+{
+  "chart": "stacked_bar_100",
+  "classes": [
+    "fence_pole",
+    "gantry_sign_pole",
+    "light_pole",
+    "power_pole",
+    "traffic_pole"
+  ],
+  "split_percent": {
+    "train": [
+      80.25,
+      82.73,
+      79.11,
+      57.14,
+      78.0
+    ],
+    "valid": [
+      8.44,
+      6.47,
+      10.4,
+      28.57,
+      10.5
+    ],
+    "test": [
+      11.32,
+      10.79,
+      10.49,
+      14.29,
+      11.5
+    ]
+  },
+  "split_counts": {
+    "train": [
+      390,
+      115,
+      852,
+      4,
+      156
+    ],
+    "valid": [
+      41,
+      9,
+      112,
+      2,
+      21
+    ],
+    "test": [
+      55,
+      15,
+      113,
+      1,
+      23
+    ]
+  }
+}

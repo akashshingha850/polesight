@@ -9,6 +9,11 @@ __pycache__/
 /run/
 *.cache
 
+# check_labels outputs
+/.draft/
+data/.draft/_roboflow/
+check_labels_report.txt
+
 # Training scripts
 /train.py
 /tune.py

@@ -5,8 +5,8 @@ Comprehensive Dataset Analysis Script
 Builds a fully structured statistical analysis of the object-detection dataset
 (schema, instances, split distribution, image file sizes and bounding-box
 statistics) and writes it as a machine-readable JSON report. It also renders a
-set of publication-quality figures into ``data/dataviz/``, each accompanied by a
-JSON file holding the exact data that figure plots.
+set of publication-quality figures into ``data/.figure/``, each accompanied by
+a JSON file holding the exact data that figure plots.
 """
 
 import os
@@ -16,9 +16,9 @@ import numpy as np
 from collections import defaultdict
 from pathlib import Path
 
-ROOT_DIR = Path(__file__).resolve().parents[1]
+ROOT_DIR = Path(__file__).resolve().parent
 DATA_DIR = ROOT_DIR / "data"
-DATAVIZ_DIR = DATA_DIR / "dataviz"
+FIGURE_DIR = ROOT_DIR / ".figure"
 
 SPLIT_ALIASES = {
     "train": ("train",),
@@ -53,7 +53,7 @@ TRAIN_DIR = resolve_split_dir("train")
 VAL_DIR = resolve_split_dir("valid")
 TEST_DIR = resolve_split_dir("test")
 
-# Class names and a fixed, CVD-safe categorical palette (dataviz reference
+# Class names and a fixed, CVD-safe categorical palette (visual reference
 # palette slots 1-5, in fixed class-id order — never cycled/re-assigned).
 CLASS_NAMES = load_classes_from_yaml()
 CLASS_PALETTE = ["#2a78d6", "#1baf7a", "#eda100", "#008300", "#4a3aa7"]
@@ -375,8 +375,8 @@ def _apply_style():
 
 def _save(fig, name, data):
     """Save a figure as PNG plus a companion JSON of the plotted data."""
-    png_path = DATAVIZ_DIR / f"{name}.png"
-    json_path = DATAVIZ_DIR / f"{name}.json"
+    png_path = FIGURE_DIR / f"{name}.png"
+    json_path = FIGURE_DIR / f"{name}.json"
     fig.savefig(png_path, dpi=200, bbox_inches="tight")
     with open(json_path, "w") as f:
         json.dump(data, f, indent=2)
@@ -384,12 +384,12 @@ def _save(fig, name, data):
 
 
 def generate_figures(report, raw):
-    """Render all figures + companion JSON into data/dataviz/."""
+    """Render all figures + companion JSON into data/.figure/."""
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    DATAVIZ_DIR.mkdir(parents=True, exist_ok=True)
+    FIGURE_DIR.mkdir(parents=True, exist_ok=True)
     _apply_style()
 
     cd = report["class_distribution"]
@@ -810,7 +810,7 @@ def main():
     figures = generate_figures(report, raw)
 
     print(f"JSON report saved to: {json_path}")
-    print(f"Generated {len(figures)} figures in: {DATAVIZ_DIR}")
+    print(f"Generated {len(figures)} figures in: {FIGURE_DIR}")
     for p in figures:
         print(f"  - {p.name}  (+ {p.stem}.json)")
 
