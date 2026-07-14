@@ -1,112 +1,116 @@
-# Graph Report - .  (2026-07-13)
+# Graph Report - .  (2026-07-14)
 
 ## Corpus Check
-- 9 files · ~4,059 words
-- Verdict: corpus is large enough that graph structure adds value.
+- Large corpus: 1064 files · ~2,000,633 words. Semantic extraction will be expensive (many Claude tokens). Consider running on a subfolder.
 
 ## Summary
-- 77 nodes · 115 edges · 11 communities (10 shown, 1 thin omitted)
-- Extraction: 95% EXTRACTED · 5% INFERRED · 0% AMBIGUOUS · INFERRED: 6 edges (avg confidence: 0.83)
-- Token cost: 0 input · 27,776 output
+- 81 nodes · 145 edges · 14 communities (11 shown, 3 thin omitted)
+- Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 2 edges (avg confidence: 0.8)
+- Token cost: 0 input · 0 output
 
 ## Community Hubs (Navigation)
-- [[_COMMUNITY_Dataset Config & Pole Taxonomy|Dataset Config & Pole Taxonomy]]
-- [[_COMMUNITY_TrainValTest Splitting|Train/Val/Test Splitting]]
-- [[_COMMUNITY_Draft Restoration|Draft Restoration]]
-- [[_COMMUNITY_Label Validation & Cleanup|Label Validation & Cleanup]]
-- [[_COMMUNITY_Dataset InstanceSize Analysis|Dataset Instance/Size Analysis]]
+- [[_COMMUNITY_Split Builder & Roboflow Download|Split Builder & Roboflow Download]]
+- [[_COMMUNITY_Figure Generation|Figure Generation]]
 - [[_COMMUNITY_Bounding-Box Statistics|Bounding-Box Statistics]]
-- [[_COMMUNITY_Annotation Counting|Annotation Counting]]
-- [[_COMMUNITY_Label Renaming|Label Renaming]]
-- [[_COMMUNITY_Analysis Entry & Tree Printing|Analysis Entry & Tree Printing]]
-- [[_COMMUNITY_LaTeX Summary Export|LaTeX Summary Export]]
-- [[_COMMUNITY_Class Loading from YAML|Class Loading from YAML]]
+- [[_COMMUNITY_Split Coverage Analysis|Split Coverage Analysis]]
+- [[_COMMUNITY_Label Sanity Checker|Label Sanity Checker]]
+- [[_COMMUNITY_Class-Name Loading (checker)|Class-Name Loading (checker)]]
+- [[_COMMUNITY_Report Writing & Stem Parsing|Report Writing & Stem Parsing]]
+- [[_COMMUNITY_Dataset Analysis Entry & IO|Dataset Analysis Entry & I/O]]
+- [[_COMMUNITY_Image Size & Sample Selection|Image Size & Sample Selection]]
+- [[_COMMUNITY_Roboflow Config & Credentials|Roboflow Config & Credentials]]
+- [[_COMMUNITY_Roboflow Config Loading|Roboflow Config Loading]]
+- [[_COMMUNITY_Multimodal Dataset Concepts|Multimodal Dataset Concepts]]
+- [[_COMMUNITY_.env Parsing|.env Parsing]]
+- [[_COMMUNITY_data.yaml Class Loading|data.yaml Class Loading]]
 
 ## God Nodes (most connected - your core abstractions)
-1. `main()` - 9 edges
-2. `data.yaml Dataset Configuration` - 9 edges
-3. `main()` - 7 edges
-4. `comprehensive_bbox_analysis()` - 7 edges
-5. `Dataset Analysis Report` - 7 edges
-6. `main()` - 5 edges
-7. `analyze_set()` - 5 edges
-8. `analyze_data_instances()` - 5 edges
-9. `parse_args()` - 4 edges
-10. `resolve_split_dir()` - 4 edges
+1. `main()` - 11 edges
+2. `build_report()` - 10 edges
+3. `generate_figures()` - 10 edges
+4. `main()` - 8 edges
+5. `add_sample_montage()` - 8 edges
+6. `download_from_roboflow()` - 7 edges
+7. `load_env()` - 6 edges
+8. `load_class_names()` - 6 edges
+9. `download_roboflow_export()` - 6 edges
+10. `write_data_yaml()` - 6 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `Image Specification (960x640 orig, 640x640 train, RGB, JPEG)` --semantically_similar_to--> `RGB Modality (color camera images)`  [INFERRED] [semantically similar]
-  data/dataset_analysis_report.txt → README.md
-- `Dataset Analysis Report` --conceptually_related_to--> `Polesight Dataset (multimodal pole-detection dataset)`  [INFERRED]
-  data/dataset_analysis_report.txt → README.md
-- `data.yaml Dataset Configuration` --references--> `Test Split (51 images, 203 instances, 10%)`  [EXTRACTED]
-  data/data.yaml → data/dataset_analysis_report.txt
-- `data.yaml Dataset Configuration` --references--> `Train Split (412 images, 1518 instances, 80%)`  [EXTRACTED]
-  data/data.yaml → data/dataset_analysis_report.txt
-- `data.yaml Dataset Configuration` --references--> `Validation Split (52 images, 188 instances, 10%)`  [EXTRACTED]
-  data/data.yaml → data/dataset_analysis_report.txt
+- `build_roboflow_label_index()` --calls--> `roboflow_stem()`  [EXTRACTED]
+  data_split.py → check_labels.py
+- `download_roboflow_export()` --calls--> `load_env()`  [EXTRACTED]
+  data_split.py → check_labels.py
+- `write_data_yaml()` --calls--> `load_roboflow_config()`  [EXTRACTED]
+  data_split.py → check_labels.py
+- `download_roboflow_export()` --calls--> `download_from_roboflow()`  [EXTRACTED]
+  data_split.py → check_labels.py
+- `write_data_yaml()` --calls--> `load_class_names()`  [EXTRACTED]
+  data_split.py → check_labels.py
 
 ## Import Cycles
 - None detected.
 
 ## Hyperedges (group relationships)
-- **Pole Class Taxonomy (5 detection classes)** — data_data_yaml_fence_pole, data_data_yaml_gantry_sign_pole, data_data_yaml_light_pole, data_data_yaml_power_pole, data_data_yaml_traffic_pole [EXTRACTED 1.00]
-- **Train/Valid/Test Dataset Partition** — data_dataset_analysis_report_train_split, data_dataset_analysis_report_valid_split, data_dataset_analysis_report_test_split [EXTRACTED 1.00]
 - **Multimodal Sensor Inputs (intensity/range/RGB)** — readme_intensity_modality, readme_range_modality, readme_rgb_modality [EXTRACTED 1.00]
 
-## Communities (11 total, 1 thin omitted)
+## Communities (14 total, 3 thin omitted)
 
-### Community 0 - "Dataset Config & Pole Taxonomy"
-Cohesion: 0.14
-Nodes (19): data.yaml Dataset Configuration, fence_pole (class 0), gantry_sign_pole (class 1), light_pole (class 2), power_pole (class 3), Roboflow Project Source (polesight-7kgwj v9), traffic_pole (class 4), Bounding Box Statistics (normalized width/height/area/aspect ratio) (+11 more)
+### Community 0 - "Split Builder & Roboflow Download"
+Cohesion: 0.22
+Nodes (17): build_image_index(), build_label_index(), build_roboflow_label_index(), copy_sample(), download_roboflow_export(), main(), parse_args(), Namespace (+9 more)
 
-### Community 1 - "Train/Val/Test Splitting"
-Cohesion: 0.38
-Nodes (9): build_image_index(), build_label_index(), copy_sample(), main(), parse_args(), Namespace, Path, reset_output_dirs() (+1 more)
+### Community 1 - "Figure Generation"
+Cohesion: 0.32
+Nodes (8): add_sample_montage(), _apply_style(), class_color(), generate_figures(), Save a figure as PNG plus a companion JSON of the plotted data., Render all figures + companion JSON into data/.figure/., Qualitative Figure 1: real annotated sample frames with drawn boxes., _save()
 
-### Community 2 - "Draft Restoration"
-Cohesion: 0.39
-Nodes (7): collect_images(), ensure_destination_dirs(), main(), parse_args(), Namespace, Path, restore_split()
+### Community 2 - "Bounding-Box Statistics"
+Cohesion: 0.29
+Nodes (7): analyze_bounding_boxes(), build_report(), calc_stats(), class_name(), Analyze bounding-box statistics from YOLO-format labels for one split.      Also, Basic descriptive statistics for a list of values., Run the full analysis and return (report_dict, raw_arrays).
 
-### Community 3 - "Label Validation & Cleanup"
-Cohesion: 0.57
-Nodes (6): has_too_few_values(), main(), parse_args(), Namespace, Path, remove_problematic_lines()
-
-### Community 4 - "Dataset Instance/Size Analysis"
-Cohesion: 0.47
-Nodes (5): analyze_data_instances(), analyze_image_file_sizes(), Analyze instances per class for each data split., Analyze file sizes of all images in the dataset., resolve_split_dir()
-
-### Community 5 - "Bounding-Box Statistics"
+### Community 3 - "Split Coverage Analysis"
 Cohesion: 0.33
-Nodes (6): analyze_bounding_boxes(), calc_stats(), comprehensive_bbox_analysis(), Analyze bounding box statistics from YOLO format labels., Calculate basic statistics for a list of data., Perform comprehensive bounding box analysis across all splits.
+Nodes (6): analyze_set(), count_annotated_images(), count_files(), Analyze a specific dataset split (images/labels/annotation coverage)., Counts files with a given extension in a directory and its subdirectories., Count images that have a corresponding non-empty annotation file.
 
-### Community 6 - "Annotation Counting"
-Cohesion: 0.33
-Nodes (6): analyze_set(), count_annotated_images(), count_files(), Count images that have corresponding non-empty annotation files., Analyze a specific dataset set (train/val/test), Counts files with a given extension in a directory and its subdirectories.
+### Community 5 - "Class-Name Loading (checker)"
+Cohesion: 0.40
+Nodes (5): load_class_names(), main(), parse_args(), Namespace, Best-effort parse of the `names:` list from <root>/data.yaml.      Handles both
 
-### Community 7 - "Label Renaming"
-Cohesion: 0.53
-Nodes (5): main(), parse_args(), Namespace, Path, rename_labels()
+### Community 6 - "Report Writing & Stem Parsing"
+Cohesion: 0.40
+Nodes (5): Path, Write the collected report lines to a .txt file (defaults to the data folder)., Numeric stem for a Roboflow label file (strips `_png.rf.<hash>`)., roboflow_stem(), write_report()
 
-### Community 8 - "Analysis Entry & Tree Printing"
+### Community 7 - "Dataset Analysis Entry & I/O"
 Cohesion: 0.50
-Nodes (4): main(), print_tree(), Recursively prints the directory structure with file counts., Main function to run comprehensive dataset analysis and save output to text file
+Nodes (4): _load_intensity_display(), main(), Load an image (incl. 16-bit ``I;16`` intensity strips) as a 0-1 float     array,, write_json_report()
 
-### Community 9 - "LaTeX Summary Export"
-Cohesion: 0.67
-Nodes (3): class_name(), print_dataset_summary(), Print comprehensive dataset summary for LaTeX table creation.
+### Community 8 - "Image Size & Sample Selection"
+Cohesion: 0.40
+Nodes (5): analyze_image_file_sizes(), Analyze file sizes (KB) of all images in the dataset., Pick sample images that together cover as many classes as possible,     preferri, resolve_split_dir(), _select_sample_images()
+
+### Community 9 - "Roboflow Config & Credentials"
+Cohesion: 0.60
+Nodes (5): ROBOFLOW_API key in .env, data/ directory (regenerable dataset), Roboflow Dataset Coordinates, Roboflow Project polesight-7kgwj, Roboflow Workspace polesight
+
+### Community 10 - "Roboflow Config Loading"
+Cohesion: 0.50
+Nodes (4): download_from_roboflow(), load_roboflow_config(), Download the dataset named in <repo>/roboflow.yaml to `dest`, return its path., Parse the flat `key: value` coordinates from <repo>/roboflow.yaml.
+
+### Community 11 - "Multimodal Dataset Concepts"
+Cohesion: 0.50
+Nodes (4): Intensity Modality (grayscale infrared images), Polesight Dataset (multimodal pole-detection dataset), Range Modality (LiDAR depth images), RGB Modality (color camera images)
 
 ## Knowledge Gaps
-- **6 isolated node(s):** `Intensity Modality (grayscale infrared images)`, `Range Modality (LiDAR depth images)`, `fence_pole (class 0)`, `gantry_sign_pole (class 1)`, `traffic_pole (class 4)` (+1 more)
+- **3 isolated node(s):** `Intensity Modality (grayscale infrared images)`, `Range Modality (LiDAR depth images)`, `RGB Modality (color camera images)`
   These have ≤1 connection - possible missing edges or undocumented components.
-- **1 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **3 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `main()` connect `Analysis Entry & Tree Printing` to `LaTeX Summary Export`, `Dataset Instance/Size Analysis`, `Bounding-Box Statistics`, `Annotation Counting`?**
-  _High betweenness centrality (0.022) - this node is a cross-community bridge._
-- **What connects `Load class names from data.yaml.`, `Counts files with a given extension in a directory and its subdirectories.`, `Analyze file sizes of all images in the dataset.` to the rest of the system?**
-  _18 weakly-connected nodes found - possible documentation gaps or missing edges._
-- **Should `Dataset Config & Pole Taxonomy` be split into smaller, more focused modules?**
-  _Cohesion score 0.14035087719298245 - nodes in this community are weakly interconnected._
+- **Why does `download_from_roboflow()` connect `Roboflow Config Loading` to `Split Builder & Roboflow Download`, `Label Sanity Checker`, `Class-Name Loading (checker)`, `Report Writing & Stem Parsing`?**
+  _High betweenness centrality (0.019) - this node is a cross-community bridge._
+- **Why does `build_report()` connect `Bounding-Box Statistics` to `Image Size & Sample Selection`, `Figure Generation`, `Split Coverage Analysis`, `Dataset Analysis Entry & I/O`?**
+  _High betweenness centrality (0.018) - this node is a cross-community bridge._
+- **What connects `Numeric stem for a Roboflow label file (strips `_png.rf.<hash>`).`, `Minimal KEY=VALUE parser so we avoid a python-dotenv dependency.`, `Parse the flat `key: value` coordinates from <repo>/roboflow.yaml.` to the rest of the system?**
+  _26 weakly-connected nodes found - possible documentation gaps or missing edges._

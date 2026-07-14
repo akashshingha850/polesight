@@ -804,12 +804,251 @@ def add_sample_montage(figures, plt):
     plt.close(fig)
 
 
+# ===== HTML REPORT =====
+
+# Figure display order + human-readable titles/captions for the HTML report.
+FIGURE_META = [
+    ("sample_annotated_frames", "Sample annotated frames",
+     "Qualitative examples with ground-truth boxes coloured by class."),
+    ("class_distribution_overall", "Class distribution (all splits)",
+     "Instance count per class across the whole dataset."),
+    ("class_distribution_by_split", "Class distribution by split",
+     "Per-class instance counts broken down by train / validation / test."),
+    ("split_distribution", "Train / validation / test split",
+     "Share of images and instances in each split."),
+    ("annotation_coverage", "Annotation coverage per split",
+     "Annotated vs. background (empty-label) images in each split."),
+    ("class_split_composition", "Class composition across splits",
+     "For each class, how its instances are stratified across splits."),
+    ("objects_per_image", "Annotation density",
+     "Distribution of the number of objects per annotated image."),
+    ("bbox_dimension_distributions", "Bounding-box dimensions",
+     "Normalized width, height, area and aspect-ratio distributions."),
+    ("bbox_width_height_scatter", "Width vs. height by class",
+     "Normalized box width against height, coloured by class."),
+    ("bbox_area_by_class", "Bounding-box area by class",
+     "Size profile (area) of boxes for each class."),
+    ("object_center_heatmap", "Object center spatial distribution",
+     "Where object centers fall within the frame."),
+    ("class_cooccurrence", "Class co-occurrence",
+     "How often pairs of classes appear together in the same image."),
+    ("image_file_size_distribution", "Image file-size distribution",
+     "Distribution of image file sizes on disk (KB)."),
+]
+
+
+def _img_data_uri(png_path):
+    """Base64-encode a PNG so it can be inlined into a self-contained HTML file."""
+    import base64
+
+    with open(png_path, "rb") as f:
+        b64 = base64.b64encode(f.read()).decode("ascii")
+    return f"data:image/png;base64,{b64}"
+
+
+def _esc(value):
+    from html import escape
+
+    return escape(str(value))
+
+
+def generate_html_report(report, figures):
+    """Render a single self-contained HTML dashboard from the report + figures."""
+    ov = report["dataset_overview"]
+    fs = ov["file_size_kb"]
+    cd = report["class_distribution"]
+    bb = report["bounding_boxes"]
+    from datetime import datetime
+
+    figure_paths = {p.stem: p for p in figures}
+
+    def stat_card(label, value, sub=""):
+        sub_html = f'<div class="card-sub">{_esc(sub)}</div>' if sub else ""
+        return (f'<div class="card"><div class="card-value">{_esc(value)}</div>'
+                f'<div class="card-label">{_esc(label)}</div>{sub_html}</div>')
+
+    # --- Overview cards ---
+    cards = "".join([
+        stat_card("Images", f"{ov['total_images']:,}",
+                  f"{ov['images_with_annotations']:,} annotated · {ov['background_images']} background"),
+        stat_card("Annotations", f"{ov['total_annotations']:,}", "bounding boxes"),
+        stat_card("Classes", ov["num_classes"], ", ".join(ov["class_names"][:2]) + " …"),
+        stat_card("Objects / image", f"{bb['objects_per_image']['mean']:.1f}",
+                  f"median {bb['objects_per_image']['median']:.0f} · max {bb['objects_per_image']['max']:.0f}"),
+        stat_card("Avg file size", f"{fs['avg']:.0f} KB",
+                  f"{fs['min']:.0f}–{fs['max']:.0f} KB"),
+        stat_card("Resolution", ov["original_resolution"], f"trained @ {ov['training_resolution']}"),
+    ])
+
+    # --- Metadata list ---
+    meta_rows = "".join(
+        f"<tr><th>{_esc(k)}</th><td>{_esc(v)}</td></tr>" for k, v in [
+            ("Dataset type", ov["dataset_type"]),
+            ("Image format", ov["image_format"]),
+            ("Annotation format", ov["annotation_format"]),
+            ("Aspect ratio", ov["aspect_ratio"]),
+            ("Color space", ov["color_space"]),
+        ])
+
+    # --- Split table ---
+    split_rows = ""
+    for split in SPLITS:
+        s = report["splits"][split]
+        split_rows += (
+            f"<tr><td class='name'>{_esc(split)}</td>"
+            f"<td>{s['images']:,}</td><td>{s['image_pct']:.1f}%</td>"
+            f"<td>{s['annotated']:,}</td><td>{s['unannotated']:,}</td>"
+            f"<td>{s['total_instances']:,}</td><td>{s['instance_pct']:.1f}%</td></tr>")
+    split_rows += (
+        f"<tr class='total'><td class='name'>total</td>"
+        f"<td>{ov['total_images']:,}</td><td>100%</td>"
+        f"<td>{ov['images_with_annotations']:,}</td><td>{ov['background_images']:,}</td>"
+        f"<td>{ov['total_annotations']:,}</td><td>100%</td></tr>")
+
+    # --- Class distribution table (with inline share bars) ---
+    class_rows = ""
+    for name, info in cd.items():
+        pct = info["pct"]
+        class_rows += (
+            f"<tr><td class='name'>"
+            f"<span class='swatch' style='background:{_esc(info['color'])}'></span>{_esc(name)}</td>"
+            f"<td>{info['count']:,}</td>"
+            f"<td class='bar-cell'><div class='bar-track'>"
+            f"<div class='bar-fill' style='width:{pct:.1f}%;background:{_esc(info['color'])}'></div></div>"
+            f"<span class='bar-pct'>{pct:.1f}%</span></td></tr>")
+
+    # --- Bounding-box summary table ---
+    def bb_row(label, d, fmt="{:.3f}"):
+        return (f"<tr><td class='name'>{_esc(label)}</td>"
+                f"<td>{fmt.format(d['mean'])}</td><td>{fmt.format(d['std'])}</td>"
+                f"<td>{fmt.format(d['min'])}</td><td>{fmt.format(d['median'])}</td>"
+                f"<td>{fmt.format(d['max'])}</td></tr>")
+    bb_rows = "".join([
+        bb_row("Width (norm.)", bb["width"]),
+        bb_row("Height (norm.)", bb["height"]),
+        bb_row("Area (norm.)", bb["area"]),
+        bb_row("Aspect ratio", bb["aspect_ratio"], "{:.2f}"),
+        bb_row("Objects / image", bb["objects_per_image"], "{:.1f}"),
+    ])
+
+    # --- Figures ---
+    fig_html = ""
+    for stem, title, caption in FIGURE_META:
+        path = figure_paths.get(stem)
+        if not path or not path.exists():
+            continue
+        fig_html += (
+            f"<figure class='fig'><figcaption><h3>{_esc(title)}</h3>"
+            f"<p>{_esc(caption)}</p></figcaption>"
+            f"<img src='{_img_data_uri(path)}' alt='{_esc(title)}' loading='lazy'></figure>")
+
+    generated = datetime.now().strftime("%Y-%m-%d %H:%M")
+    html = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dataset Analysis Report</title>
+<style>
+  :root {{
+    --bg:#fcfcfb; --panel:#ffffff; --ink:#0b0b0b; --muted:#52514e; --faint:#898781;
+    --line:#e1e0d9; --edge:#c3c2b7; --accent:#2a78d6;
+  }}
+  * {{ box-sizing:border-box; }}
+  body {{ margin:0; background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"DejaVu Sans",sans-serif;
+    line-height:1.5; }}
+  .wrap {{ max-width:1100px; margin:0 auto; padding:40px 24px 80px; }}
+  header h1 {{ font-size:28px; margin:0 0 4px; letter-spacing:-.01em; }}
+  header .sub {{ color:var(--faint); font-size:14px; margin-bottom:32px; }}
+  h2 {{ font-size:18px; margin:44px 0 14px; padding-bottom:8px;
+    border-bottom:1px solid var(--line); }}
+  .cards {{ display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+    gap:14px; margin-bottom:8px; }}
+  .card {{ background:var(--panel); border:1px solid var(--line); border-radius:10px;
+    padding:16px 18px; }}
+  .card-value {{ font-size:24px; font-weight:700; letter-spacing:-.01em; }}
+  .card-label {{ color:var(--muted); font-size:13px; margin-top:2px; }}
+  .card-sub {{ color:var(--faint); font-size:11.5px; margin-top:6px; }}
+  table {{ width:100%; border-collapse:collapse; background:var(--panel);
+    border:1px solid var(--line); border-radius:10px; overflow:hidden; font-size:13.5px; }}
+  th,td {{ padding:9px 14px; text-align:right; border-bottom:1px solid var(--line); }}
+  thead th {{ background:#f4f3ee; color:var(--muted); font-weight:600; font-size:12px;
+    text-transform:uppercase; letter-spacing:.03em; }}
+  td.name, th.name {{ text-align:left; }}
+  tr:last-child td {{ border-bottom:none; }}
+  tr.total td {{ font-weight:700; background:#f7f6f1; }}
+  .meta-table th {{ text-align:left; color:var(--muted); font-weight:600; width:40%; }}
+  .swatch {{ display:inline-block; width:11px; height:11px; border-radius:3px;
+    margin-right:8px; vertical-align:middle; }}
+  .bar-cell {{ display:flex; align-items:center; gap:10px; text-align:left; }}
+  .bar-track {{ flex:1; height:8px; background:var(--line); border-radius:5px; overflow:hidden;
+    min-width:80px; }}
+  .bar-fill {{ height:100%; border-radius:5px; }}
+  .bar-pct {{ color:var(--muted); font-size:12px; min-width:44px; }}
+  .figs {{ display:flex; flex-direction:column; gap:34px; }}
+  figure.fig {{ margin:0; background:var(--panel); border:1px solid var(--line);
+    border-radius:12px; padding:18px 20px 22px; }}
+  figure.fig figcaption h3 {{ margin:0 0 2px; font-size:16px; }}
+  figure.fig figcaption p {{ margin:0 0 14px; color:var(--faint); font-size:13px; }}
+  figure.fig img {{ display:block; max-width:100%; height:auto; margin:0 auto; }}
+  footer {{ margin-top:56px; color:var(--faint); font-size:12px; text-align:center; }}
+  @media (max-width:640px) {{ th,td {{ padding:7px 9px; }} .wrap {{ padding:24px 14px 60px; }} }}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Dataset Analysis Report</h1>
+    <div class="sub">Object-detection dataset · {ov['num_classes']} classes · generated {generated}</div>
+  </header>
+
+  <section class="cards">{cards}</section>
+
+  <h2>Dataset properties</h2>
+  <table class="meta-table"><tbody>{meta_rows}</tbody></table>
+
+  <h2>Split distribution</h2>
+  <table>
+    <thead><tr><th class="name">Split</th><th>Images</th><th>Img %</th>
+      <th>Annotated</th><th>Background</th><th>Instances</th><th>Inst %</th></tr></thead>
+    <tbody>{split_rows}</tbody>
+  </table>
+
+  <h2>Class distribution</h2>
+  <table>
+    <thead><tr><th class="name">Class</th><th>Instances</th><th class="name">Share</th></tr></thead>
+    <tbody>{class_rows}</tbody>
+  </table>
+
+  <h2>Bounding-box statistics</h2>
+  <table>
+    <thead><tr><th class="name">Measure</th><th>Mean</th><th>Std</th>
+      <th>Min</th><th>Median</th><th>Max</th></tr></thead>
+    <tbody>{bb_rows}</tbody>
+  </table>
+
+  <h2>Figures</h2>
+  <section class="figs">{fig_html}</section>
+
+  <footer>Generated by dataset_analysis.py · {generated}</footer>
+</div>
+</body>
+</html>"""
+
+    output_file = DATA_DIR / "dataset_analysis_report.html"
+    output_file.write_text(html, encoding="utf-8")
+    return output_file
+
+
 def main():
     report, raw = build_report()
     json_path = write_json_report(report)
     figures = generate_figures(report, raw)
+    html_path = generate_html_report(report, figures)
 
     print(f"JSON report saved to: {json_path}")
+    print(f"HTML report saved to: {html_path}")
     print(f"Generated {len(figures)} figures in: {FIGURE_DIR}")
     for p in figures:
         print(f"  - {p.name}  (+ {p.stem}.json)")
