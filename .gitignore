@@ -41,3 +41,6 @@ check_labels_report.txt
 *.lof
 *.brf
 %OUTDIR%/
+
+
+*.pt

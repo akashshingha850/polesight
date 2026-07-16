@@ -5,12 +5,12 @@ import wandb
 
 EPOCHS = 100
 IMGSZ = 640
-BATCH_SIZE = 16
+BATCH_SIZE = 32
 PATIENCE = 20
 
 YOLO_MODEL = "yolo26"  # Pretrained model to start from
-# VARIENT = ['n', 's', 'm', 'l', 'x']
-VARIENT = ['s']
+VARIENT = ['n', 's', 'm', 'l', 'x']
+# VARIENT = ['s']
 
 #clear terminal
 os.system('clear')
@@ -34,25 +34,25 @@ for var in VARIENT:
                                   epochs=EPOCHS, imgsz=IMGSZ,
                                   batch=BATCH, patience=PATIENCE,
                                   save=True,
-                                  classes=[0, 1, 2, 4],
-                                  # Augmentation disabled
-                                  hsv_h=0.0,
-                                  hsv_s=0.0,
-                                  hsv_v=0.0,
-                                  degrees=0.0,
-                                  translate=0.0,
-                                  scale=0.0,
-                                  shear=0.0,
-                                  perspective=0.0,
-                                  flipud=0.0,
-                                  fliplr=0.0,
-                                  bgr=0.0,
-                                  mosaic=0.0,
-                                  mixup=0.0,
-                                  copy_paste=0.0,
-                                  auto_augment=False,
-                                  erasing=0.0,
-                                  crop_fraction=1.0,
+                                #   classes=[0, 1, 2, 4],
+                                #   # Augmentation disabled
+                                #   hsv_h=0.0,
+                                #   hsv_s=0.0,
+                                #   hsv_v=0.0,
+                                #   degrees=0.0,
+                                #   translate=0.0,
+                                #   scale=0.0,
+                                #   shear=0.0,
+                                #   perspective=0.0,
+                                #   flipud=0.0,
+                                #   fliplr=0.0,
+                                #   bgr=0.0,
+                                #   mosaic=0.0,
+                                #   mixup=0.0,
+                                #   copy_paste=0.0,
+                                #   auto_augment=False,
+                                #   erasing=0.0,
+                                #   crop_fraction=1.0,
                                   )
             break  # Training successful
         except RuntimeError as e:
