@@ -1,0 +1,374 @@
+# =============================================================================
+# polesight — YOLO26-seg hyperparameter tuning configuration
+# =============================================================================
+# Consumed by tune.py. Three sections:
+#
+#   tuner:      meta-settings for the evolutionary search itself
+#   train:      FIXED training args, identical for every trial (not searched)
+#   space:      SEARCHED hyperparameters — [min, max] or [min, max, gain]
+#   space_full: every parameter Ultralytics' Tuner can search (opt-in)
+#
+# Dataset context these values are tuned for:
+#   412 train / 52 val / 51 test images, 5 classes, instance segmentation,
+#   single RTX 2080 Ti (11 GB). This is a SMALL dataset (<1000 images), so the
+#   Ultralytics fine-tuning guide's small-data advice applies: lower LR,
+#   softer augmentation, early stopping.
+#
+# Implementation sources:
+#   https://docs.ultralytics.com/guides/yolo26-training-recipe
+#   https://docs.ultralytics.com/guides/finetuning-guide
+#   https://docs.ultralytics.com/guides/model-training-tips
+#   https://docs.ultralytics.com/guides/hyperparameter-tuning
+#   https://docs.ultralytics.com/modes/train
+#   https://docs.ultralytics.com/reference/engine/tuner
+#
+# -----------------------------------------------------------------------------
+# ACADEMIC REFERENCES
+# -----------------------------------------------------------------------------
+# Ultralytics' Tuner has no paper of its own — the reference docs describe the
+# algorithm but cite nothing. The citations below cover the mechanisms it is
+# assembled from. All entries verified against Crossref / DataCite (2026-07-22);
+# author lists and DOIs are as returned by those registries, and every link
+# below was checked to resolve. Only [1]-[4] and [8] are peer-reviewed
+# publications — the five arXiv entries are preprints with no journal DOI.
+# MIT Press and ACM links reject automated requests but open fine in a browser.
+#
+# [1] BLX-alpha crossover (`parents: 9`, alpha = 0.2 — see TUNER META below)
+#     Eshelman, L. J., & Schaffer, J. D. (1993). Real-Coded Genetic Algorithms
+#     and Interval-Schemata. Foundations of Genetic Algorithms, 2, 187-202.
+#     doi:10.1016/B978-0-08-094832-4.50018-0
+#     https://doi.org/10.1016/B978-0-08-094832-4.50018-0
+#     https://www.sciencedirect.com/science/article/pii/B9780080948324500180
+#
+# [2] Log-normal / multiplicative mutation with a step size (the
+#     exp(sigma * gain * N(0,1)) operator and its sigma schedule)
+#     Beyer, H.-G., & Schwefel, H.-P. (2002). Evolution strategies -- A
+#     comprehensive introduction. Natural Computing, 1(1), 3-52.
+#     doi:10.1023/A:1015059928466
+#     https://doi.org/10.1023/A:1015059928466
+#     https://link.springer.com/article/10.1023/A:1015059928466
+#
+# [3] Theory behind step-size control — why a fixed linear sigma decay is a
+#     simplification of self-adaptation
+#     Beyer, H.-G. (1995). Toward a Theory of Evolution Strategies:
+#     Self-Adaptation. Evolutionary Computation, 3(3), 311-347.
+#     doi:10.1162/evco.1995.3.3.311
+#     https://doi.org/10.1162/evco.1995.3.3.311
+#     https://direct.mit.edu/evco/article/3/3/311-347/745
+#
+# [4] CMA-ES — the stronger baseline this tuner deliberately does not implement
+#     (no covariance adaptation, no derandomization)
+#     Hansen, N., & Ostermeier, A. (2001). Completely Derandomized
+#     Self-Adaptation in Evolution Strategies. Evolutionary Computation,
+#     9(2), 159-195. doi:10.1162/106365601750190398
+#     https://doi.org/10.1162/106365601750190398
+#     https://direct.mit.edu/evco/article/9/2/159-195/892
+#
+# [5] CMA-ES applied specifically to deep-network hyperparameters
+#     Loshchilov, I., & Hutter, F. (2016). CMA-ES for Hyperparameter
+#     Optimization of Deep Neural Networks. arXiv:1604.07269.
+#     doi:10.48550/arXiv.1604.07269
+#     https://arxiv.org/abs/1604.07269
+#
+# [6] Random search — the obligatory baseline for any 300-trial claim
+#     Bergstra, J., & Bengio, Y. (2012). Random Search for Hyper-Parameter
+#     Optimization. Journal of Machine Learning Research, 13, 281-305.
+#     No DOI (JMLR does not mint them).
+#     https://jmlr.org/papers/v13/bergstra12a.html
+#
+# [7] HPO survey — positions GA against Bayesian optimization and Hyperband
+#     Yu, T., & Zhu, H. (2020). Hyper-Parameter Optimization: A Review of
+#     Algorithms and Applications. arXiv:2003.05689.
+#     doi:10.48550/arXiv.2003.05689
+#     https://arxiv.org/abs/2003.05689
+#
+# [8] Evolutionary methods for deep learning, surveyed
+#     Li, N., Ma, L., Yu, G., Xue, B., Zhang, M., & Jin, Y. (2023). Survey on
+#     Evolutionary Deep Learning: Principles, Algorithms, Applications, and
+#     Open Issues. ACM Computing Surveys, 56(2), 1-34. doi:10.1145/3603704
+#     https://doi.org/10.1145/3603704
+#     https://dl.acm.org/doi/10.1145/3603704
+#
+# [9] YOLO26 + MuSGD, first-party (primary citation for `optimizer: MuSGD`)
+#     Jocher, G., Qiu, J., Liu, M., Lyu, S., Akyon, F. C., & Kalfaoglu, M. E.
+#     (2026). Ultralytics YOLO26: Unified Real-Time End-to-End Vision Models.
+#     arXiv:2606.03748. doi:10.48550/arXiv.2606.03748
+#     https://arxiv.org/abs/2606.03748
+#
+# [10] YOLO26 architecture, third-party benchmark (DFL removal, NMS-free head,
+#      ProgLoss, STAL, MuSGD)
+#      Sapkota, R., Cheppally, R. H., Sharda, A., & Karkee, M. (2025). YOLO26:
+#      Key Architectural Enhancements and Performance Benchmarking for
+#      Real-Time Object Detection. arXiv:2509.25164.
+#      doi:10.48550/arXiv.2509.25164
+#      https://arxiv.org/abs/2509.25164
+#
+# [11] YOLO lineage — the Tuner GA descends from YOLOv5's `evolve`
+#      Sapkota, R., & Karkee, M. (2025). Ultralytics YOLO Evolution: An
+#      Overview of YOLO26, YOLO11, YOLOv8 and YOLOv5 Object Detectors for
+#      Computer Vision and Pattern Recognition. arXiv:2510.09653.
+#      doi:10.48550/arXiv.2510.09653
+#      https://arxiv.org/abs/2510.09653
+#
+# [12] Muon, the "Mu" in MuSGD. The original is a blog post with no DOI:
+#      Jordan, K., Jin, Y., Boza, V., You, J., Cesista, F., Newhouse, L., &
+#      Bernstein, J. (2024). Muon: An optimizer for hidden layers in neural
+#      networks. https://kellerjordan.github.io/posts/muon/
+#      Citable peer-reviewable substitute:
+#      Liu, J., Su, J., Yao, X., Jiang, Z., Lai, G., Du, Y., et al. (2025).
+#      Muon is Scalable for LLM Training. arXiv:2502.16982.
+#      doi:10.48550/arXiv.2502.16982
+#      https://arxiv.org/abs/2502.16982
+#
+# NOTE ON RESUMING: Tuner writes tune_results.csv with one column per `space`
+# key. Changing the active space mid-run makes the CSV unreadable — start a
+# fresh tune dir whenever you edit the space.
+# =============================================================================
+
+# Hyperparameter optimization used the genetic search built into Ultralytics YOLO (Jocher et al., 2026), which combines BLX-α crossover (Eshelman & Schaffer, 1993) with log-normal multiplicative mutation under a decaying step size (Beyer & Schwefel, 2002). Following the reference implementation (Ultralytics, 2026), each iteration recombined up to nine fitness-weighted parents, mutated each gene with probability 0.5, and decayed σ linearly from 0.2 to 0.1 over 300 iterations.
+
+
+
+
+# -----------------------------------------------------------------------------
+# TUNER META
+# -----------------------------------------------------------------------------
+tuner:
+  iterations: 300           # number of trials (each = one full training run)
+  cleanup: false            # false keeps per-trial weights (costs disk; 300 trials)
+  use_space: space          # which block below to search: 'space' or 'space_full'
+  per_trial_wandb: false    # true => Ultralytics opens a separate W&B run + model
+                            # artifact for EVERY trial (300 runs). false keeps a
+                            # single parent run that logs the tuning curve only.
+
+  # Searched params that must be integers, with the multiple they snap to.
+  # Ultralytics' Tuner only int-rounds close_mosaic and epochs; anything else
+  # arrives as a float (e.g. batch=18.42) and raises in the DataLoader, which
+  # the Tuner swallows as fitness=0.0. tune.py coerces these instead.
+  int_params:
+    batch: 8                # snap to 8/16/24/32 — multiples of 8 keep the
+                            # 2080 Ti's FP16 tensor cores fed
+
+  # Evolution internals are NOT exposed by Tuner.__call__ — listed for reference:
+  #   parents  = 9      top-N configs used for BLX-alpha crossover
+  #   mutation = 0.5    per-gene mutation probability
+  #   sigma    = 0.2 -> 0.1, linearly decayed over the first 300 iterations
+  # Fitness for segmentation = mask mAP50-95 + box mAP50-95 (equal weight).
+
+  # Optional distributed tuning across machines (Ultralytics MongoDB Atlas mode):
+  # mongodb_uri: "mongodb+srv://user:pass@cluster.mongodb.net/"
+  # mongodb_db: ultralytics
+  # mongodb_collection: polesight_tune
+
+
+# -----------------------------------------------------------------------------
+# FIXED TRAIN ARGS — held constant across all trials
+# -----------------------------------------------------------------------------
+train:
+
+  # --- model & data ---------------------------------------------------------
+  model: yolo26m-seg.pt     # m fits 11 GB at batch 8 / imgsz 640
+  data: data/data.yaml
+  task: segment
+  mode: train
+  pretrained: true          # transfer learning — essential at 412 images
+  fraction: 1.0             # <1.0 only for fast smoke tests (e.g. 0.25)
+
+  # --- schedule -------------------------------------------------------------
+  epochs: 100               # tuning budget. Production retrain of the winning
+                            # config should use 300+ (model-training-tips).
+  patience: 20              # fine-tuning guide recommends 10–20 for small data
+  time:                     # (float, h) hard wall-clock cap; overrides epochs
+  close_mosaic: 10          # YOLO26 recipe: disable mosaic for last 10 epochs.
+                            # Kept FIXED here (removed from the search space) so
+                            # every trial gets the same clean final phase.
+
+  # --- batch / resolution ---------------------------------------------------
+  batch: 16                 # SEARCHED — see `space.batch`. This value is only
+                            # the seed for trial 1 (before any CSV history).
+                            # Measured on 2080 Ti, yolo26m-seg @ 640:
+                            #   b8 = 2.26 GB, b16 = 3.99 GB, b32 ~ 7.4 GB.
+                            # Never use AutoBatch (-1 / 0.80) here: it would pick
+                            # a different batch per trial *outside* the search
+                            # record, so the CSV would not describe the run.
+  imgsz: 640                # 1280 helps thin/distant poles but needs batch 2–4
+                            # on this GPU — decide before tuning, not during.
+  nbs: 64                   # nominal batch for loss normalization; grad accum
+                            # = nbs/batch = 8 here. Leave at 64.
+  rect: false               # must stay false — incompatible with mosaic
+  multi_scale: 0.0          # scale jitter as a fraction of imgsz. 0.5 helps
+                            # scale generalization but ~1.5x the memory.
+
+  # --- optimizer ------------------------------------------------------------
+  optimizer: MuSGD          # CRITICAL: do NOT use 'auto'. With 412 imgs x 100
+                            # epochs / batch 8 = ~5.2k iters (<10k), 'auto' picks
+                            # AdamW and *explicitly ignores lr0 and momentum*,
+                            # which silently voids two of the tuned parameters.
+                            # MuSGD is the YOLO26 recipe optimizer for all sizes
+                            # and boosts LR on head params when fine-tuning.
+                            # Alternatives: SGD, AdamW, Adam, NAdam, RAdam, RMSProp
+  cos_lr: true              # cosine LR decay; recommended in model-training-tips
+  freeze:                   # null = train everything. Fine-tuning guide: 10
+                            # (backbone) for small, similar-domain data; 23 for
+                            # very small. Run as a separate sweep, not searched —
+                            # it is an int/list and evolves poorly.
+
+  # --- segmentation specific ------------------------------------------------
+  overlap_mask: true        # merge overlapping instance masks during training
+  mask_ratio: 4             # mask downsample. 2 gives finer masks for thin poles
+                            # at higher memory cost — worth one A/B, not a search.
+
+  # --- runtime / determinism ------------------------------------------------
+  device: 0
+  workers: 8
+  seed: 0                   # fixed seed => trials differ only by hyperparameters
+  deterministic: true       # true = comparable trials; false is somewhat faster
+  amp: true                 # mixed precision — keep on
+  cache: true               # 412 images fit easily in RAM; large speedup over
+                            # 300 trials. Use 'disk' or false if RAM-constrained.
+  compile: false            # torch.compile; unstable across 300 subprocess runs
+  single_cls: false
+  resume: false             # Tuner resumes from tune_results.csv, not from here
+  profile: false
+  verbose: true
+
+  # --- validation & artifacts ----------------------------------------------
+  val: true                 # required — fitness comes from validation
+  split: val
+  save: true                # keep checkpoints so the best trial is recoverable
+  save_period: -1
+  save_json: false
+  plots: false              # off during tuning (300x plot generation + upload).
+                            # Turn on for the final production retrain.
+  conf:                     # null => val uses 0.001
+  iou: 0.7                  # NMS IoU. YOLO26 is NMS-free end-to-end, so this
+                            # only affects the legacy one-to-many path.
+  max_det: 300
+  half: false
+  end2end:                  # leave unset — YOLO26 sets its own default
+
+  # --- augmentation held fixed (the rest is searched in `space`) ------------
+  flipud: 0.0               # poles are gravity-aligned; vertical flip destroys
+                            # the strongest prior in this dataset. Keep at 0.
+  bgr: 0.0                  # channel-swap; only useful for mixed BGR/RGB sources
+  cutmix: 0.0               # rectangular paste; harmful for thin structures
+  copy_paste_mode: flip     # 'flip' or 'mixup' (mixup mode needs mixup > 0)
+  auto_augment: randaugment # classification-only — no effect on segment
+  erasing: 0.4              # classification-only — no effect on segment
+
+  # --- loss gains not applicable to segment (listed for completeness) -------
+  # pose: 12.0              # pose task only
+  # kobj: 1.0               # pose task only
+  # rle: 1.0                # pose task only
+  # angle: 1.0              # obb task only
+  # dropout: 0.0            # classify task only
+
+
+# -----------------------------------------------------------------------------
+# SEARCH SPACE (active) — 22 parameters
+# -----------------------------------------------------------------------------
+# Format: [min, max] or [min, max, gain]. `gain` (default 1.0) scales the
+# mutation step for that gene: momentum uses 0.3 because it is very sensitive
+# near its upper bound.
+#
+# Bounds are narrowed vs. Ultralytics' defaults using the YOLO26 recipe values
+# for the S/M/L/X models as anchors:
+#   lr0 0.00038 | lrf 0.882 | momentum 0.948 | weight_decay 0.00027
+#   warmup_epochs 0.99 | box 9.83 | cls 0.65 | dfl 0.96
+#   mosaic 0.992 | mixup 0.05–0.427 | scale 0.9–0.95 | degrees ~0 | shear ~0
+# -----------------------------------------------------------------------------
+space:
+
+  # --- batch ----------------------------------------------------------------
+  batch: [8, 32]              # int-snapped to {8, 16, 24, 32} by tuner.int_params.
+                              # READ THIS BEFORE TRUSTING THE RESULT:
+                              # with nbs=64, accumulate=round(64/batch) holds the
+                              # effective batch at 64, the scaled weight_decay at
+                              # 1.0x and optimizer-steps/epoch at 6.5 for every
+                              # value in this range. So this dimension searches
+                              # ONLY BatchNorm-statistic quality and trial speed —
+                              # a genuine but small effect that will be partly
+                              # buried in run-to-run noise. Search `nbs` too if
+                              # you want batch to move the optimizer as well.
+                              # Also: batch 32 leaves ~3 GB, so a trial pairing it
+                              # with scale~0.95 + mosaic~1.0 can OOM. The trainer
+                              # auto-halves batch and retries up to 3x, which
+                              # rescues the trial but means the CSV then records a
+                              # batch the run did not actually use.
+
+  # --- learning rate & optimizer (highest impact) ---------------------------
+  lr0: [1.0e-5, 5.0e-3]       # recipe M anchor 0.00038; fine-tune guide 0.001
+  lrf: [0.01, 1.0]            # final LR = lr0 * lrf; recipe M uses 0.882
+  momentum: [0.85, 0.98, 0.3] # SGD/MuSGD momentum (Adam beta1); anchor 0.948
+  weight_decay: [0.0, 0.001]  # anchor 0.00027
+  warmup_epochs: [0.0, 5.0]   # anchor ~1.0
+  warmup_momentum: [0.5, 0.95]
+  warmup_bias_lr: [0.0, 0.2]  # not in Ultralytics' default space; matters
+                              # whenever warmup_epochs is being searched
+
+  # --- loss gains -----------------------------------------------------------
+  box: [2.0, 20.0]            # anchor 9.83
+  cls: [0.2, 4.0]             # anchor 0.65; raise if classes are confused
+  dfl: [0.4, 12.0]            # anchor 0.96
+
+  # --- photometric augmentation --------------------------------------------
+  hsv_h: [0.0, 0.05]          # hue; poles have weak colour identity — keep small
+  hsv_s: [0.0, 0.9]
+  hsv_v: [0.0, 0.6]           # brightness; covers day/dusk capture variation
+
+  # --- geometric augmentation ----------------------------------------------
+  degrees: [0.0, 10.0]        # tight: recipe M uses ~0 and poles are vertical
+  translate: [0.0, 0.3]
+  scale: [0.3, 0.95]          # anchor 0.9–0.95
+  shear: [0.0, 4.0]           # recipe M ~0
+  perspective: [0.0, 0.001]   # hard cap — 0.001 is the usable maximum
+  fliplr: [0.0, 1.0]          # safe for this dataset (0.5 is the usual optimum)
+
+  # --- compositing augmentation --------------------------------------------
+  mosaic: [0.3, 1.0]          # anchor 0.992; small-data guide suggests ~0.5
+  mixup: [0.0, 0.3]           # anchor 0.05–0.427; small-data guide suggests 0.0
+  copy_paste: [0.0, 0.6]      # segmentation-only; strong for sparse pole classes
+
+
+# -----------------------------------------------------------------------------
+# SEARCH SPACE (full) — every parameter Tuner can search
+# -----------------------------------------------------------------------------
+# Ultralytics' stock 25-parameter space plus warmup_bias_lr. Select with
+# `tuner.use_space: space_full`. Expect noticeably slower convergence: 26 genes
+# with a 0.5 mutation rate needs well over 300 trials to explore properly.
+# -----------------------------------------------------------------------------
+space_full:
+  lr0: [1.0e-5, 1.0e-2]
+  lrf: [0.01, 1.0]
+  momentum: [0.7, 0.98, 0.3]
+  weight_decay: [0.0, 0.001]
+  warmup_epochs: [0.0, 5.0]
+  warmup_momentum: [0.0, 0.95]
+  warmup_bias_lr: [0.0, 0.2]
+  box: [1.0, 20.0]
+  cls: [0.1, 4.0]
+  dfl: [0.4, 12.0]
+  hsv_h: [0.0, 0.1]
+  hsv_s: [0.0, 0.9]
+  hsv_v: [0.0, 0.9]
+  degrees: [0.0, 45.0]
+  translate: [0.0, 0.9]
+  scale: [0.0, 0.95]
+  shear: [0.0, 10.0]
+  perspective: [0.0, 0.001]
+  flipud: [0.0, 1.0]
+  fliplr: [0.0, 1.0]
+  bgr: [0.0, 1.0]
+  mosaic: [0.0, 1.0]
+  mixup: [0.0, 1.0]
+  cutmix: [0.0, 1.0]
+  copy_paste: [0.0, 1.0]
+  close_mosaic: [0.0, 10.0]   # int-rounded by Tuner; overrides train.close_mosaic
+
+
+# -----------------------------------------------------------------------------
+# NOT SEARCHABLE by Tuner (mutation is multiplicative on floats).
+# Change these by hand and run separate comparison sweeps:
+#   optimizer, imgsz, batch, epochs, freeze, cos_lr, rect, overlap_mask,
+#   mask_ratio, multi_scale, cache, amp, nbs, copy_paste_mode, model size
+# -----------------------------------------------------------------------------
