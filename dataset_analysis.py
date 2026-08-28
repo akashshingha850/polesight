@@ -166,9 +166,8 @@ def _polygon_centroid(xs, ys, signed_area):
 def parse_label_file(path, split):
     """Parse one YOLO label file into instances plus any per-row issues found.
 
-    Row classification follows the same rule as ``check_labels.py``: an even
-    coordinate count >= 6 is a polygon, exactly 4 coordinates is a bounding box,
-    anything else is malformed.
+    An even coordinate count >= 6 is a polygon, exactly 4 coordinates is a
+    bounding box, and anything else is malformed.
     """
     instances, issues = [], []
     seen_rows = set()

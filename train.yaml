@@ -1,0 +1,104 @@
+# =============================================================================
+# PoleSight — YOLO26 instance-segmentation training
+# =============================================================================
+#
+#   python train.py             # train all variants below
+#   python train.py yolo26      # train only the YOLO26 family
+#   python train.py --eval      # evaluate existing checkpoints on test
+#
+# Settings under common are shared by every run. Family overrides take
+# precedence. Relative data/project paths are resolved from this repository.
+# =============================================================================
+
+common:
+  data: data/data.yaml
+  project: run/segment/polesight
+  task: segment
+  device: 0
+
+  epochs: 100
+  patience: 100            # let the YOLO26 ProgLoss schedule reach its endpoint
+  batch: 24                # starting batch; train.py halves it after CUDA OOM
+  min_batch: 4
+  imgsz: 640
+
+  # Validation selects best.pt during training. Final reporting is performed
+  # separately on test after training finishes.
+  val: true
+  split: val
+  eval_splits: [test]
+
+  pretrained: true
+  fraction: 1.0
+  save: true
+  save_period: -1
+  plots: true
+  cache: true
+  workers: 8
+  seed: 0
+  deterministic: true
+  amp: true
+  compile: false
+  rect: false
+  nbs: 64
+  multi_scale: 0.0
+
+  # Segmentation-specific settings.
+  overlap_mask: true
+  mask_ratio: 4
+
+  # Keep mosaic active for most of training, then finish on un-mosaicked images.
+  close_mosaic: 10
+  flipud: 0.0              # poles have a fixed vertical orientation
+  bgr: 0.0
+  cutmix: 0.0
+
+families:
+  yolo26:
+    stem: "yolo26{v}-seg"
+    variants: [n, s, m, l, x]
+    overrides:
+      # Final PoleSight tuning result (best fitness 0.60656). MuSGD is explicit:
+      # optimizer=auto would choose AdamW for this small dataset and ignore the
+      # configured learning rate and momentum.
+      optimizer: MuSGD
+      cos_lr: true
+      lr0: 0.0048
+      lrf: 0.01
+      momentum: 0.92949
+      weight_decay: 0.00006
+      warmup_epochs: 3.90982
+      warmup_momentum: 0.5604
+      warmup_bias_lr: 0.1043
+
+      box: 4.4287
+      cls: 0.91983
+      dfl: 1.42339
+
+      hsv_h: 0.01229
+      hsv_s: 0.61038
+      hsv_v: 0.54935
+      degrees: 0.00027
+      translate: 0.11802
+      scale: 0.42522
+      shear: 0.00141
+      perspective: 0.00015
+      fliplr: 0.36344
+      mosaic: 1.0
+      mixup: 0.00727
+      copy_paste: 0.00191
+
+    # Train two genuinely different heads from the same pretrained checkpoint.
+    # Setting train_end2end changes the model before its loss is constructed;
+    # primary_head only selects which evaluation result is highlighted.
+    arms:
+      nms-free:
+        train_end2end: true
+        primary_head: one2one
+      nms:
+        train_end2end: false
+        primary_head: default
+
+wandb:
+  project: PoleSight-rtx2080-recipe
+  job_type: recipe
