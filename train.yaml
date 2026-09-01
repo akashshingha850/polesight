@@ -99,6 +99,24 @@ families:
         train_end2end: false
         primary_head: default
 
+  # Baseline families for the comparison table. No overrides and no arms: they
+  # train on `common` as-is, which is what makes them a baseline — the yolo26
+  # block above is a PoleSight tuning result and is not transferable to
+  # architectures it was not searched on. Neither family has a second head, so
+  # `train_end2end` has nothing to switch and a single arm is correct.
+  yolo11:
+    stem: "yolo11{v}-seg"
+    variants: [n, s, m, l, x]
+    overrides: {}
+
+  yolov8:
+    stem: "yolov8{v}-seg"
+    variants: [n, s, m, l, x]
+    overrides: {}
+
+# RT-DETR is deliberately absent: Ultralytics ships it as a detection-only
+# architecture with no -seg checkpoint, so it cannot enter a segmentation sweep.
+
 wandb:
   project: PoleSight-rtx2080-recipe
   job_type: recipe

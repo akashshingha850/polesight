@@ -5,9 +5,9 @@ Comprehensive Dataset Analysis Script (instance segmentation)
 Builds a fully structured statistical analysis of the YOLO instance-segmentation
 dataset — schema, instances, split distribution, image properties, polygon/mask
 geometry and annotation validity — and writes it as a machine-readable JSON
-report plus a self-contained HTML dashboard. It also renders publication-quality
-figures into ``figure/`` (a symlink to the paper repository's figures folder),
-each accompanied by a JSON file holding the exact data that figure plots.
+report, a self-contained HTML dashboard and a Markdown summary. It also renders
+publication-quality figures into ``figure/`` (a symlink to the paper
+repository's figures folder), each accompanied by a JSON file holding the exact data that figure plots.
 
 Labels are polygons (``class x1 y1 x2 y2 ... xn yn``); a handful of rows in this
 dataset are still plain boxes (``class cx cy w h``). Both are parsed, and each
@@ -39,6 +39,19 @@ DATA_DIR = ROOT_DIR / "data"
 # ``figure`` is a symlink to ../PoleSight----WACV-2027/figures, so generated
 # figures land straight in the paper repository.
 FIGURE_DIR = ROOT_DIR / "figure" / "sample"
+# ``paper`` is a symlink to ../PoleSight-IVCNZ2026. Paper figures are written
+# separately from the exploratory dump above: one standalone PDF per figure, at
+# print size, so they can be placed individually in the manuscript.
+PAPER_FIGURE_DIR = ROOT_DIR / "paper" / "figures" / "dataset"
+
+# IEEE two-column geometry, in inches.
+COL_W = 3.48
+FULL_W = 7.16
+# One cell of a full-width 1x3 subfigure row (0.32\textwidth each). The three
+# statistics panels are authored at exactly this size so LaTeX places them at
+# scale 1.0 — fonts, rules and marks then match across all three.
+PANEL_W = 0.32 * FULL_W
+PANEL_H = 1.88
 
 SPLIT_ALIASES = {
     "train": ("train",),
@@ -85,7 +98,16 @@ TEST_DIR = resolve_split_dir("test")
 # Class names and a fixed, CVD-safe categorical palette (visual reference
 # palette slots 1-5, in fixed class-id order — never cycled/re-assigned).
 CLASS_NAMES = load_classes_from_yaml()
-CLASS_PALETTE = ["#2a78d6", "#1baf7a", "#eda100", "#008300", "#4a3aa7"]
+# Slot order is fixed and never cycled. These five hues clear the all-pairs
+# checks as a set (worst normal-vision dE 15.6, worst protan/deutan dE 9.1);
+# the assignment below additionally matches contrast-against-white inversely to
+# median instance size, so the thinnest classes get the most legible slots:
+#   fence   violet  8.33:1  (median mask  30 px, thinnest)
+#   gantry  yellow  2.11:1  (median mask 269 px, largest)
+#   light   blue    4.30:1  (56% of all instances)
+#   power   aqua    2.74:1  (7 instances)
+#   traffic green   4.82:1
+CLASS_PALETTE = ["#4a3aa7", "#eda100", "#2a78d6", "#1baf7a", "#008300"]
 SPLIT_PALETTE = {"train": "#2a78d6", "valid": "#1baf7a", "test": "#eda100"}
 
 
@@ -630,6 +652,169 @@ def write_json_report(report):
     output_file = DATA_DIR / "dataset_analysis_report.json"
     with open(output_file, "w") as f:
         json.dump(report, f, indent=2)
+    return output_file
+
+
+# ===== MARKDOWN OUTPUT =====
+
+def _md_table(headers, rows, align=None):
+    """Render a GitHub-flavoured markdown table (first column left-aligned)."""
+    align = align or ["left"] + ["right"] * (len(headers) - 1)
+    rule = {"left": ":---", "right": "---:", "center": ":---:"}
+    lines = ["| " + " | ".join(str(h) for h in headers) + " |",
+             "| " + " | ".join(rule[a] for a in align) + " |"]
+    lines += ["| " + " | ".join(str(c) for c in row) + " |" for row in rows]
+    return "\n".join(lines)
+
+
+def generate_markdown_report(report, figures):
+    """Render the same content as the HTML dashboard as a Markdown document."""
+    from datetime import datetime
+
+    ov = report["dataset_overview"]
+    fs = ov["file_size_kb"]
+    cd = report["class_distribution"]
+    bb = report["bounding_boxes"]
+    ip = report["image_properties"]
+    seg = report["segmentation_geometry"]
+    val = report["validation"]
+
+    figure_paths = {p.stem: p for p in figures}
+    generated = datetime.now().strftime("%Y-%m-%d %H:%M")
+
+    def stat_row(label, d, fmt="{:.2f}"):
+        return [label, fmt.format(d["mean"]), fmt.format(d["std"]),
+                fmt.format(d["min"]), fmt.format(d["median"]), fmt.format(d["max"])]
+
+    parts = [
+        "# Dataset Analysis Report",
+        "",
+        f"Instance segmentation · {ov['num_classes']} classes · generated {generated}",
+        "",
+        "## Key figures",
+        "",
+        _md_table(["Metric", "Value", "Detail"], [
+            ["Images", f"{ov['total_images']:,}",
+             f"{ov['images_with_annotations']:,} annotated · {ov['background_images']:,} background"],
+            ["Annotations", f"{ov['total_annotations']:,}",
+             f"{ov['polygon_annotations']:,} polygons · {ov['box_annotations']:,} box rows"],
+            ["Classes", ov["num_classes"], ", ".join(ov["class_names"])],
+            ["Instances / image", f"{bb['objects_per_image']['mean']:.1f}",
+             f"median {bb['objects_per_image']['median']:.0f} · max {bb['objects_per_image']['max']:.0f}"],
+            ["Mask fill ratio", f"{seg['fill_ratio']['median']:.2f}",
+             f"median · {seg['vertices']['median']:.0f} vertices typical"],
+            ["Resolution", ov["original_resolution"], f"{ov['image_format']} · {ov['color_space']}"],
+            ["Avg file size", f"{fs['avg']:.0f} KB", f"{fs['min']:.0f}–{fs['max']:.0f} KB"],
+            ["Validation issues", f"{val['total_issues']:,}",
+             "clean" if val["clean"] else f"{len(val['issues'])} issue type(s)"],
+        ], ["left", "right", "left"]),
+        "",
+        "## Dataset properties",
+        "",
+        _md_table(["Property", "Value"], [
+            ["Dataset type", ov["dataset_type"]],
+            ["Annotation format", ov["annotation_format"]],
+            ["Image format", ov["image_format"]],
+            ["Color space", ov["color_space"]],
+            ["Resolution", ov["original_resolution"]],
+            ["Aspect ratio", ov["aspect_ratio"]],
+            ["Training resolution", ov["training_resolution"]],
+        ], ["left", "left"]),
+        "",
+        "## Image properties",
+        "",
+        f"Pixel modes present: {', '.join(f'{m} ({c:,})' for m, c in ip['modes'].items())}",
+        "",
+        _md_table(["Resolution", "Images", "Share"],
+                  [[res, f"{count:,}", f"{count / ip['total_files'] * 100:.1f}%"]
+                   for res, count in ip["resolutions"].items()]
+                  + [["**total**", f"**{ip['total_files']:,}**", "**100%**"]]),
+        "",
+        "## Split distribution",
+        "",
+        _md_table(["Split", "Images", "Img %", "Annotated", "Background", "Instances", "Inst %"],
+                  [[split,
+                    f"{report['splits'][split]['images']:,}",
+                    f"{report['splits'][split]['image_pct']:.1f}%",
+                    f"{report['splits'][split]['annotated']:,}",
+                    f"{report['splits'][split]['unannotated']:,}",
+                    f"{report['splits'][split]['total_instances']:,}",
+                    f"{report['splits'][split]['instance_pct']:.1f}%"]
+                   for split in SPLITS]
+                  + [["**total**", f"**{ov['total_images']:,}**", "**100%**",
+                      f"**{ov['images_with_annotations']:,}**", f"**{ov['background_images']:,}**",
+                      f"**{ov['total_annotations']:,}**", "**100%**"]]),
+        "",
+        "## Class distribution",
+        "",
+        _md_table(["Class", "Instances", "Polygons", "Box rows", "Share"],
+                  [[name, f"{info['count']:,}", f"{info['polygons']:,}",
+                    f"{info['boxes']:,}", f"{info['pct']:.1f}%"]
+                   for name, info in cd.items()]),
+        "",
+        "## Instance geometry",
+        "",
+        "Bounding boxes are derived from polygon extents and reported in pixels.",
+        "",
+        _md_table(["Measure", "Mean", "Std", "Min", "Median", "Max"], [
+            stat_row("Width (px)", bb["width_px"], "{:.1f}"),
+            stat_row("Height (px)", bb["height_px"], "{:.1f}"),
+            stat_row("Bounding-box area (px²)", bb["area_px"], "{:.0f}"),
+            stat_row("Aspect ratio (w/h, px)", bb["aspect_px"]),
+            stat_row("Instances / image", bb["objects_per_image"], "{:.1f}"),
+        ]),
+        "",
+        "## Segmentation geometry",
+        "",
+        _md_table(["Measure", "Mean", "Std", "Min", "Median", "Max"], [
+            stat_row("Mask area (px²)", seg["mask_area_px"], "{:.0f}"),
+            stat_row("Mask fill ratio", seg["fill_ratio"], "{:.3f}"),
+            stat_row("Vertices per polygon", seg["vertices"], "{:.1f}"),
+        ]),
+        "",
+        f"Per class (medians; size split uses {seg['size_category_thresholds']['small']} / "
+        f"{seg['size_category_thresholds']['large']}):",
+        "",
+        _md_table(["Class", "Polygons", "Mask area (px²)", "Fill ratio", "Vertices", "S / M / L"],
+                  [[name, f"{info['polygons']:,}",
+                    f"{info['mask_area_px']['median']:.0f}",
+                    f"{info['fill_ratio']['median']:.2f}",
+                    f"{info['vertices']['median']:.0f}",
+                    f"{info['size_categories']['small']:,} / "
+                    f"{info['size_categories']['medium']:,} / "
+                    f"{info['size_categories']['large']:,}"]
+                   for name, info in seg["per_class"].items()]),
+        "",
+        "## Data validation",
+        "",
+    ]
+
+    if val["issues"]:
+        rows = []
+        for issue, info in val["issues"].items():
+            splits_txt = ", ".join(f"{s}: {n}" for s, n in info["by_split"].items())
+            examples = "<br>".join(f"`{e}`" for e in info["examples"][:3])
+            if info["truncated"]:
+                examples += f"<br>… {info['count'] - len(info['examples'][:3])} more"
+            rows.append([f"{ISSUE_DESCRIPTIONS.get(issue, issue)}<br>`{issue}`",
+                         f"{info['count']:,}", splits_txt, examples])
+        parts.append(_md_table(["Issue", "Count", "By split", "Examples"],
+                               rows, ["left", "right", "left", "left"]))
+    else:
+        parts.append("No annotation issues found.")
+
+    parts += ["", "## Figures", ""]
+    for stem, title, caption in FIGURE_META:
+        path = figure_paths.get(stem)
+        if not path or not path.exists():
+            continue
+        rel = os.path.relpath(path, DATA_DIR)
+        parts += [f"### {title}", "", caption, "", f"![{title}]({rel})", ""]
+
+    parts += ["---", "", f"Generated by `dataset_analysis.py` · {generated}", ""]
+
+    output_file = DATA_DIR / "dataset_analysis_report.md"
+    output_file.write_text("\n".join(parts), encoding="utf-8")
     return output_file
 
 
@@ -1362,6 +1547,329 @@ FIGURE_META = [
 ]
 
 
+# ===== PAPER FIGURES =====
+# Standalone, print-sized PDFs for the manuscript. Each figure is written on its
+# own so it can be placed independently; nothing here is collaged. The screen
+# figures above stay as they are — this is a separate, smaller set.
+
+PAPER_CLASS_LABEL = {
+    "fence_pole": "Fence", "gantry_sign_pole": "Gantry", "light_pole": "Light",
+    "power_pole": "Power", "traffic_pole": "Traffic",
+}
+# Marker shape carries identity alongside hue, so the classes stay separable in
+# greyscale print and for readers who cannot use the colour channel.
+PAPER_CLASS_MARKER = {
+    "fence_pole": "s", "gantry_sign_pole": "D", "light_pole": "o",
+    "power_pole": "^", "traffic_pole": "v",
+}
+INK, INK2, MUTED, HAIRLINE = "#0b0b0b", "#52514e", "#898781", "#e1e0d9"
+
+
+def _apply_paper_style():
+    """Print styling: serif to match IEEEtran, no grid, embeddable fonts."""
+    import matplotlib.pyplot as plt
+
+    plt.rcParams.update({
+        "figure.facecolor": "white",
+        "axes.facecolor": "white",
+        "savefig.facecolor": "white",
+        "font.family": "serif",
+        "font.serif": ["Times New Roman", "Nimbus Roman", "DejaVu Serif"],
+        "font.size": 7,
+        "axes.labelsize": 7,
+        "axes.titlesize": 7.5,
+        "axes.titleweight": "normal",
+        "axes.titlecolor": INK,
+        "xtick.labelsize": 6.5,
+        "ytick.labelsize": 6.5,
+        "legend.fontsize": 6.5,
+        "text.color": INK,
+        "axes.labelcolor": INK,
+        "axes.edgecolor": MUTED,
+        "axes.linewidth": 0.5,
+        "xtick.color": INK2,
+        "ytick.color": INK2,
+        "xtick.labelcolor": INK2,
+        "ytick.labelcolor": INK2,
+        "xtick.major.width": 0.5,
+        "ytick.major.width": 0.5,
+        "xtick.major.size": 2.2,
+        "ytick.major.size": 2.2,
+        "axes.grid": False,
+        "axes.spines.top": False,
+        "axes.spines.right": False,
+        "pdf.fonttype": 42,
+        "ps.fonttype": 42,
+    })
+
+
+def _save_paper(fig, name):
+    """Write one standalone paper figure as PDF (vector, for LaTeX)."""
+    path = PAPER_FIGURE_DIR / f"{name}.pdf"
+    fig.savefig(path)
+    import matplotlib.pyplot as plt
+    plt.close(fig)
+    return path
+
+
+def _polygon_mask(raw):
+    """Boolean mask selecting polygon instances; box rows have no mask geometry."""
+    return [k == "polygon" for k in raw["kinds"]]
+
+
+def _frame_area_px(report):
+    """Pixel area of the dominant frame resolution, e.g. '1024x128' -> 131072."""
+    res = next(iter(report["image_properties"]["resolutions"]), None)
+    if not res or "x" not in res:
+        return 1
+    w, h = res.split("x")
+    return int(w) * int(h)
+
+
+def paper_fig_instance_size(report, raw, plt):
+    """Mask-area distribution with the COCO small/medium/large boundaries."""
+    import numpy as np
+
+    keep = _polygon_mask(raw)
+    areas = np.array([a for a, k in zip(raw["mask_areas_px"], keep) if k])
+    frame = _frame_area_px(report)
+    small_t, med_t = (t * frame for t in SIZE_CATEGORY_THRESHOLDS)
+
+    fig, ax = plt.subplots(figsize=(COL_W, 1.85))
+    fig.subplots_adjust(left=0.145, right=0.98, bottom=0.235, top=0.94)
+    bins = np.logspace(np.log10(max(areas.min(), 0.5)), np.log10(areas.max()), 34)
+    ax.hist(areas, bins=bins, color="#2a78d6", edgecolor="white", linewidth=0.3)
+    ax.set_xscale("log")
+    for x in (small_t, med_t):
+        ax.axvline(x, color=INK, lw=0.7, ls=(0, (3, 2)))
+
+    n = len(areas)
+    shares = {c: sum(1 for a in areas if size_category(a / frame) == c) / n
+              for c in SIZE_CATEGORIES}
+    ymax = ax.get_ylim()[1]
+    ax.set_ylim(0, ymax * 1.28)
+    for xpos, cat, label in ((small_t / 25, "small", "small"),
+                             (small_t * 2.8, "medium", "medium")):
+        ax.text(xpos, ymax * 1.24, f"{label}\n{shares[cat] * 100:.0f}%",
+                ha="center", va="top", fontsize=5.8, color=INK2, linespacing=1.15)
+    ax.set_xlim(bins[0] * 0.8, bins[-1] * 2.2)
+    ax.set_xlabel("Mask area (px, log)")
+    ax.set_ylabel("Instances")
+    return _save_paper(fig, "instance_size")
+
+
+def paper_fig_class_cooccurrence(raw, plt):
+    """Lower-triangular class co-occurrence: how often two classes share a frame.
+
+    The diagonal is omitted on purpose — it is the per-class image count, which
+    Table I already carries, and at 466 it would swamp the colour ramp and leave
+    every off-diagonal cell white. Classes are ordered by instance frequency so
+    the strongest pairs sit top-left.
+    """
+    import numpy as np
+    import matplotlib as mpl
+
+    freq = Counter(raw["class_ids"])
+    order = sorted(range(len(CLASS_NAMES)), key=lambda c: -freq.get(c, 0))
+    pairs = raw["cooccurrence"]
+
+    def pair_count(a, b):
+        return pairs.get(f"{min(a, b)},{max(a, b)}", 0)
+
+    n = len(order)
+    rows, cols = order[1:], order[:-1]           # drop the empty first row / last col
+    grid = np.full((n - 1, n - 1), np.nan)
+    for i, ra in enumerate(rows):
+        for j, cb in enumerate(cols):
+            if j <= i:
+                grid[i, j] = pair_count(ra, cb)
+
+    fig, ax = plt.subplots(figsize=(PANEL_W, PANEL_H))
+    fig.subplots_adjust(left=0.215, right=0.99, bottom=0.02, top=0.86)
+    finite = grid[np.isfinite(grid)]
+    # pcolormesh (not imshow) so empty cells are genuinely absent and the white
+    # cell separation is a drawn edge rather than an interpolated seam.
+    edges = np.arange(n) - 0.5
+    im = ax.pcolormesh(edges, edges, np.ma.masked_invalid(grid), cmap="Blues",
+                       norm=mpl.colors.LogNorm(vmin=max(finite.min(), 1),
+                                               vmax=finite.max()),
+                       edgecolors="white", linewidth=1.2)
+    ax.invert_yaxis()
+    ax.set_aspect("equal")
+
+    # Counts are labelled on every cell; the ramp is reinforcement, not the only
+    # channel. Ink flips to white once the cell is dark enough to need it.
+    hi = np.log10(max(finite.max(), 2))
+    for i in range(n - 1):
+        for j in range(n - 1):
+            if not np.isfinite(grid[i, j]):
+                continue
+            v = int(grid[i, j])
+            dark = np.log10(max(v, 1)) / hi > 0.70  # every label clears 4.5:1
+            ax.text(j, i, f"{v}", ha="center", va="center", fontsize=6.5,
+                    color="white" if dark else INK)
+
+    ax.set_xticks(range(n - 1))
+    ax.set_yticks(range(n - 1))
+    ax.set_xticklabels([PAPER_CLASS_LABEL.get(CLASS_NAMES[c], CLASS_NAMES[c]) for c in cols])
+    ax.set_yticklabels([PAPER_CLASS_LABEL.get(CLASS_NAMES[c], CLASS_NAMES[c]) for c in rows])
+    ax.xaxis.set_ticks_position("top")
+    ax.tick_params(length=0, pad=2)
+    for spine in ax.spines.values():
+        spine.set_visible(False)
+    return _save_paper(fig, "class_cooccurrence")
+
+
+def paper_fig_instance_shape(raw, plt):
+    """Width vs height density, with each class median marked and labelled."""
+    import numpy as np
+    import matplotlib as mpl
+
+    keep = _polygon_mask(raw)
+    w = np.array([v for v, k in zip(raw["widths_px"], keep) if k])
+    h = np.array([v for v, k in zip(raw["heights_px"], keep) if k])
+    cls = [c for c, k in zip(raw["class_ids"], keep) if k]
+
+    fig, ax = plt.subplots(figsize=(PANEL_W, PANEL_H))
+    fig.subplots_adjust(left=0.185, right=0.975, bottom=0.165, top=0.97)
+    ax.hexbin(w, h, xscale="log", yscale="log", gridsize=26, mincnt=1,
+              cmap="Greys", norm=mpl.colors.LogNorm(vmax=90), linewidths=0, alpha=0.85)
+    for ratio, label, at in ((1, "h = w", 105), (10, "h = 10w", 9.0)):
+        xs = np.array([0.7, 400])
+        ax.plot(xs, ratio * xs, color=INK, lw=0.6, ls=(0, (3, 2)), zorder=3)
+        ax.text(at, at * ratio * 1.30, label, fontsize=5.8, color=INK2,
+                rotation=32, ha="center")
+
+    # (x-factor, y-factor, ha) offsets keep the direct labels off their markers
+    # and off each other; Power and Light have near-identical medians.
+    offsets = {"fence_pole": (0.55, 1.0, "right"),
+               "gantry_sign_pole": (1.0, 0.60, "center"),
+               "light_pole": (1.85, 1.18, "left"),
+               "power_pole": (0.74, 1.06, "right"),
+               "traffic_pole": (1.0, 0.58, "center")}
+    for cid, name in enumerate(CLASS_NAMES):
+        xs = [x for x, c in zip(w, cls) if c == cid]
+        ys = [y for y, c in zip(h, cls) if c == cid]
+        if not xs:
+            continue
+        mx, my = float(np.median(xs)), float(np.median(ys))
+        ax.plot(mx, my, PAPER_CLASS_MARKER.get(name, "o"), color=class_color(cid),
+                ms=5, mec="white", mew=0.7, zorder=5)
+        dx, dy, ha = offsets.get(name, (1.0, 1.4, "center"))
+        ax.annotate(PAPER_CLASS_LABEL.get(name, name), (mx * dx, my * dy),
+                    color=INK, fontsize=6, ha=ha, va="center", zorder=6)
+
+    ax.set_xlim(0.85, 450)
+    ax.set_ylim(0.85, 200)
+    ax.set_xlabel("Width (px, log)")
+    ax.set_ylabel("Height (px, log)")
+    return _save_paper(fig, "instance_shape")
+
+
+def paper_fig_centroid_density(raw, plt):
+    """Where instances sit in the range image: azimuth vs elevation."""
+    import numpy as np
+    import matplotlib as mpl
+
+    keep = _polygon_mask(raw)
+    x = np.array([v for v, k in zip(raw["x_centers"], keep) if k])
+    y = np.array([v for v, k in zip(raw["y_centers"], keep) if k])
+
+    fig, ax = plt.subplots(figsize=(PANEL_W, PANEL_H))
+    # Fill the panel: the map is the smallest element in the 1x3 row otherwise.
+    # The cost is more vertical exaggeration, which the caption states.
+    fig.subplots_adjust(left=0.155, right=0.85, bottom=0.205, top=0.965)
+    counts, _, _ = np.histogram2d(x, y, bins=[48, 16], range=[[0, 1], [0, 1]])
+    im = ax.imshow(counts.T, origin="upper", extent=[0, 1, 1, 0], aspect="auto",
+                   cmap="Blues", interpolation="nearest")
+    ax.set_xticks([0, 0.5, 1])
+    ax.set_yticks([0, 0.5, 1])
+    ax.set_xlabel("Azimuth (normalised $u$)")
+    ax.set_ylabel("Elevation ($v$)")
+    cb = fig.colorbar(im, ax=ax, fraction=0.036, pad=0.03)
+    cb.set_label("Instances", fontsize=6.5, labelpad=1.5)
+    cb.ax.tick_params(labelsize=6, length=1.8)
+    cb.locator = mpl.ticker.MaxNLocator(nbins=4, integer=True)
+    cb.update_ticks()
+    cb.outline.set_linewidth(0.4)
+    return _save_paper(fig, "centroid_density")
+
+
+def paper_fig_sample_frames(plt, n=3):
+    """One standalone figure per annotated frame, full page width.
+
+    Polygons only, no in-image text: identity comes from the legend on the last
+    frame, so the frames themselves stay readable at print size.
+    """
+    import numpy as np
+    from matplotlib.patches import Polygon
+    from matplotlib.lines import Line2D
+    import matplotlib.patheffects as pe
+
+    samples = _select_sample_images(n=n)
+    paths = []
+    for idx, (img_path, split) in enumerate(samples, start=1):
+        display = _load_intensity_display(img_path)
+        if display is None:
+            continue
+        img_h, img_w = display.shape[:2]
+        fig, ax = plt.subplots(figsize=(FULL_W, FULL_W * img_h / img_w * 1.06))
+        fig.subplots_adjust(left=0.002, right=0.998, bottom=0.002, top=0.998)
+        ax.imshow(display, cmap="gray", vmin=0, vmax=1, aspect="auto")
+
+        label = resolve_split_dir(split) / "labels" / f"{img_path.stem}.txt"
+        instances, _ = parse_label_file(label, split)
+        for inst in instances:
+            if inst.kind != "polygon" or inst.n_vertices < 3:
+                continue
+            xy = inst.points * np.array([img_w, img_h])
+            ax.add_patch(Polygon(
+                xy, closed=True, fill=False, edgecolor=class_color(inst.class_id),
+                lw=1.0, joinstyle="round",
+                path_effects=[pe.Stroke(linewidth=2.0, foreground="white", alpha=0.85),
+                              pe.Normal()]))
+        ax.set_xticks([])
+        ax.set_yticks([])
+        for spine in ax.spines.values():
+            spine.set_visible(True)
+            spine.set_color(HAIRLINE)
+            spine.set_linewidth(0.5)
+        paths.append(_save_paper(fig, f"sample_frame_{idx}"))
+
+    # The legend ships as its own file so it can be placed once beneath whatever
+    # sequence of frames the manuscript ends up using.
+    fig, ax = plt.subplots(figsize=(FULL_W, 0.22))
+    ax.axis("off")
+    handles = [Line2D([], [], color=class_color(cid), lw=1.6,
+                      marker=PAPER_CLASS_MARKER.get(name, "o"), ms=3.6,
+                      mec="white", mew=0.5, label=PAPER_CLASS_LABEL.get(name, name))
+               for cid, name in enumerate(CLASS_NAMES)]
+    ax.legend(handles=handles, loc="center", ncol=len(handles), frameon=False,
+              handlelength=1.5, columnspacing=1.6)
+    paths.append(_save_paper(fig, "sample_frames_legend"))
+    return paths
+
+
+def generate_paper_figures(report, raw):
+    """Render the standalone manuscript figures into PAPER_FIGURE_DIR."""
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    PAPER_FIGURE_DIR.mkdir(parents=True, exist_ok=True)
+    _apply_paper_style()
+    try:
+        paths = [
+            paper_fig_class_cooccurrence(raw, plt),
+            paper_fig_instance_shape(raw, plt),
+            paper_fig_centroid_density(raw, plt),
+        ]
+        paths.extend(paper_fig_sample_frames(plt))
+    finally:
+        _apply_style()  # restore the screen style for the HTML dashboard
+    return paths
+
+
 def _img_data_uri(png_path):
     """Base64-encode a PNG so it can be inlined into a self-contained HTML file."""
     import base64
@@ -1661,14 +2169,20 @@ def main():
     report, raw = build_report()
     json_path = write_json_report(report)
     figures = generate_figures(report, raw)
+    paper_figures = generate_paper_figures(report, raw)
     html_path = generate_html_report(report, figures)
+    md_path = generate_markdown_report(report, figures)
 
     val = report["validation"]
     print(f"JSON report saved to: {json_path}")
     print(f"HTML report saved to: {html_path}")
+    print(f"Markdown report saved to: {md_path}")
     print(f"Generated {len(figures)} figures in: {FIGURE_DIR}")
     for p in figures:
         print(f"  - {p.name}  (+ {p.stem}.json)")
+    print(f"Generated {len(paper_figures)} paper figures in: {PAPER_FIGURE_DIR}")
+    for p in paper_figures:
+        print(f"  - {p.name}")
     if val["clean"]:
         print("\nValidation: no annotation issues found.")
     else:

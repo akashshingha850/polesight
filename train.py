@@ -1,9 +1,10 @@
 """PoleSight instance-segmentation training configured by ``train.yaml``.
 
 Usage:
-    python train.py             # every family configured in train.yaml
-    python train.py yolo26      # one configured family
-    python train.py --eval      # evaluate existing checkpoints without training
+    python train.py                             # every family in train.yaml
+    python train.py yolo26                      # one configured family
+    python train.py --eval                      # evaluate existing checkpoints
+    python train.py --config train_default.yaml # a different sweep definition
 
 Per-epoch model selection stays on the validation split. After training, the
 saved best checkpoint is evaluated separately on the configured final splits
@@ -218,6 +219,16 @@ def _eval_checkpoint(
 
     probe = YOLO(str(weights_path))
     end2end = bool(getattr(probe.model.model[-1], "end2end", False))
+    # model.info() only prints in this Ultralytics version and returns None, so
+    # the cost figures are read straight off the module.
+    try:
+        from ultralytics.utils.torch_utils import get_flops, get_num_params
+
+        layers = len(list(probe.model.modules()))
+        parameters = int(get_num_params(probe.model))
+        gflops = round(float(get_flops(probe.model, 640)), 2)
+    except Exception:
+        layers = parameters = gflops = None
     del probe
     heads = (
         (("one2one", True), ("one2many", False))
@@ -230,6 +241,11 @@ def _eval_checkpoint(
         "weights": str(weights_path),
         "task": "segment",
         "end2end": end2end,
+        # Cost side of the accuracy/cost table a comparison report needs.
+        "layers": layers,
+        "parameters": parameters,
+        "gflops": gflops,
+        "weights_mb": round(weights_path.stat().st_size / 1024**2, 2),
         "splits": {},
     }
     for split in splits:
@@ -414,6 +430,108 @@ def _find_checkpoint(output_root: str | Path, name: str) -> tuple[Path | None, i
     return best, epochs
 
 
+def _environment() -> dict:
+    """Versions and hardware, so a result can be reproduced or explained later."""
+    import platform
+
+    import ultralytics
+
+    device = None
+    if torch.cuda.is_available():
+        properties = torch.cuda.get_device_properties(0)
+        device = {
+            "name": properties.name,
+            "memory_gb": round(properties.total_memory / 1024**3, 1),
+            "capability": f"{properties.major}.{properties.minor}",
+        }
+    return {
+        "ultralytics": ultralytics.__version__,
+        "torch": torch.__version__,
+        "cuda": torch.version.cuda,
+        "python": platform.python_version(),
+        "gpu": device,
+    }
+
+
+def _dataset_summary(data: str | Path) -> dict:
+    """Class names and split sizes for the dataset a sweep was scored on."""
+    data_path = Path(data)
+    summary: dict = {"data_yaml": str(data_path)}
+    try:
+        spec = yaml.safe_load(data_path.read_text(encoding="utf-8")) or {}
+    except OSError:
+        return summary
+    summary["classes"] = spec.get("names")
+    summary["images"] = {
+        split: len(list((data_path.parent / split / "images").iterdir()))
+        for split in ("train", "valid", "test")
+        if (data_path.parent / split / "images").is_dir()
+    }
+    return summary
+
+
+def _training_record(weights: Path | None) -> dict:
+    """What the run itself reported: verify.json plus wall time from results.csv.
+
+    Read back from disk rather than kept in memory because --eval is expected to
+    run long after training, including on runs from an earlier session.
+    """
+    record: dict = {}
+    if weights is None:
+        return record
+    run_dir = weights.parent.parent
+    verify = run_dir / "verify.json"
+    if verify.exists():
+        try:
+            record.update(json.loads(verify.read_text(encoding="utf-8")))
+        except json.JSONDecodeError:
+            pass
+    results = run_dir / "results.csv"
+    if results.exists():
+        with results.open(encoding="utf-8") as stream:
+            rows = list(csv.DictReader(stream))
+        # Ultralytics' `time` column is cumulative seconds since the run started,
+        # so the final row is the run's wall time.
+        elapsed = rows[-1].get("time") if rows else None
+        if elapsed:
+            record["train_seconds"] = round(float(elapsed), 1)
+            record["train_hours"] = round(float(elapsed) / 3600, 3)
+    record["run_dir"] = str(run_dir)
+    return record
+
+
+def _write_json_report(
+    output_root: Path, config: dict, records: list[dict], missing: list[str]
+) -> Path:
+    """Write the machine-readable sweep result used as report material."""
+    import datetime
+
+    report = {
+        "generated": datetime.datetime.now().isoformat(timespec="seconds"),
+        "project": str(output_root),
+        "environment": _environment(),
+        "dataset": _dataset_summary(config["common"]["data"]),
+        "config": {
+            "common": config["common"],
+            "families": {
+                family: {
+                    "variants": spec["variants"],
+                    "overrides": spec.get("overrides") or {},
+                    "arms": list((spec.get("arms") or {})) or None,
+                }
+                for family, spec in config["families"].items()
+            },
+        },
+        "runs": records,
+        "incomplete": missing,
+    }
+    output = output_root / "results.json"
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+    LOGGER.info(f"[eval] {len(records)} run(s) -> {output}")
+    return output
+
+
 def eval_existing(config: dict, selected: list[str]) -> None:
     """Evaluate existing checkpoints and write a box/mask comparison table."""
     common = config["common"]
@@ -421,6 +539,7 @@ def eval_existing(config: dict, selected: list[str]) -> None:
     output_root = Path(common["project"])
     splits = list(common.get("eval_splits") or ("test",))
     rows = []
+    records = []
     missing = []
 
     for family in selected:
@@ -458,6 +577,15 @@ def eval_existing(config: dict, selected: list[str]) -> None:
                 missing.append(name)
                 continue
 
+            records.append({
+                "model": name,
+                "family": family,
+                "variant": name.replace("-seg", "").replace(family, "", 1).lstrip("-")
+                           or None,
+                "training": _training_record(weights),
+                **{k: v for k, v in report.items() if k != "model"},
+            })
+
             head = report.get("primary_head", "default")
             for split, scored in report["splits"].items():
                 chosen = scored[head]
@@ -491,6 +619,7 @@ def eval_existing(config: dict, selected: list[str]) -> None:
         writer.writeheader()
         writer.writerows(rows)
     LOGGER.info(f"[eval] {len(rows)} rows -> {output}")
+    _write_json_report(output_root, config, records, missing)
 
     for split in splits:
         print(f"\n=== {split} (mask metrics) ===")
@@ -514,9 +643,26 @@ def eval_existing(config: dict, selected: list[str]) -> None:
         print(f"\nno usable checkpoint for: {', '.join(missing)}")
 
 
+def _take_config_path(argv: list[str]) -> str | None:
+    """Pop --config PATH (or --config=PATH) out of argv and return the path.
+
+    Sweeps are defined by their config file, so selecting one is how a stock
+    baseline runs without editing the tuned recipe in place.
+    """
+    for index, argument in enumerate(argv):
+        if argument == "--config":
+            if index + 1 >= len(argv):
+                raise SystemExit("--config needs a path")
+            del argv[index]
+            return argv.pop(index)
+        if argument.startswith("--config="):
+            return argv.pop(index).split("=", 1)[1]
+    return None
+
+
 def main(argv: list[str] | None = None) -> None:
     argv = list(sys.argv[1:] if argv is None else argv)
-    config = load_config()
+    config = load_config(_take_config_path(argv))
     families = config["families"]
     selected = [argument for argument in argv if not argument.startswith("-")] or list(
         families
