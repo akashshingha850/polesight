@@ -6,8 +6,9 @@ Builds a fully structured statistical analysis of the YOLO instance-segmentation
 dataset — schema, instances, split distribution, image properties, polygon/mask
 geometry and annotation validity — and writes it as a machine-readable JSON
 report, a self-contained HTML dashboard and a Markdown summary. It also renders
-publication-quality figures into ``figure/`` (a symlink to the paper
-repository's figures folder), each accompanied by a JSON file holding the exact data that figure plots.
+publication-quality figures into ``FIGURE_DIR`` (a symlink into the paper
+repository), each accompanied by a JSON file holding the exact data that figure
+plots.
 
 Labels are polygons (``class x1 y1 x2 y2 ... xn yn``); a handful of rows in this
 dataset are still plain boxes (``class cx cy w h``). Both are parsed, and each
@@ -36,16 +37,12 @@ from pathlib import Path
 
 ROOT_DIR = Path(__file__).resolve().parent
 DATA_DIR = ROOT_DIR / "data"
-# ``figure`` is a symlink to ../PoleSight----WACV-2027/figures, so generated
-# figures land straight in the paper repository.
-FIGURE_DIR = ROOT_DIR / "figure" / "sample"
-# ``paper`` is a symlink to ../PoleSight-IVCNZ2026. Paper figures are written
-# separately from the exploratory dump above: one standalone PDF per figure, at
-# print size, so they can be placed individually in the manuscript.
-PAPER_FIGURE_DIR = ROOT_DIR / "paper" / "figures" / "dataset"
+# ``paper`` is a symlink to ../PoleSight-IVCNZ2026. Every figure — the
+# exploratory dump and the print-size manuscript figures (``paper_*.png``) —
+# is written here as PNG, so there is one folder to pick figures from.
+FIGURE_DIR = ROOT_DIR / "paper" / "figures" / "dataset"
 
 # IEEE two-column geometry, in inches.
-COL_W = 3.48
 FULL_W = 7.16
 # One cell of a full-width 1x3 subfigure row (0.32\textwidth each). The three
 # statistics panels are authored at exactly this size so LaTeX places them at
@@ -848,11 +845,11 @@ def _apply_style():
     })
 
 
-def _save(fig, name, data):
+def _save(fig, name, data, *, dpi=200, bbox_inches="tight"):
     """Save a figure as PNG plus a companion JSON of the plotted data."""
     png_path = FIGURE_DIR / f"{name}.png"
     json_path = FIGURE_DIR / f"{name}.json"
-    fig.savefig(png_path, dpi=200, bbox_inches="tight")
+    fig.savefig(png_path, dpi=dpi, bbox_inches=bbox_inches)
     with open(json_path, "w") as f:
         json.dump(data, f, indent=2)
     return png_path
@@ -909,7 +906,6 @@ def generate_figures(report, raw):
     fig, ax = plt.subplots(figsize=(8, 4.5))
     bars = ax.barh(o_names[::-1], o_counts[::-1], color=o_colors[::-1], height=0.62)
     ax.set_xlabel("Instances")
-    ax.set_title("Class distribution (all splits)")
     ax.xaxis.grid(True)
     ax.yaxis.grid(False)
     total = sum(counts)
@@ -935,7 +931,6 @@ def generate_figures(report, raw):
     ax.set_xticks(x)
     ax.set_xticklabels(names, rotation=20, ha="right")
     ax.set_ylabel("Instances")
-    ax.set_title("Class distribution by split")
     ax.yaxis.grid(True)
     ax.xaxis.grid(False)
     ax.legend(frameon=False, title="Split")
@@ -959,7 +954,6 @@ def generate_figures(report, raw):
                     f"{v}\n{v/tot*100:.1f}%", ha="center", va="bottom",
                     color="#52514e", fontsize=9)
         ax.set_ylim(0, max(vals) * 1.18)
-    fig.suptitle("Train / validation / test split", fontsize=13, fontweight="bold", color="#0b0b0b")
     figures.append(_save(fig, "split_distribution",
                          {"chart": "bar", "splits": SPLITS,
                           "images": img_counts, "instances": inst_counts}))
@@ -972,7 +966,6 @@ def generate_figures(report, raw):
     ax.bar(SPLITS, annotated, color="#2a78d6", label="Annotated", width=0.55)
     ax.bar(SPLITS, background, bottom=annotated, color="#e34948", label="Background", width=0.55)
     ax.set_ylabel("Images")
-    ax.set_title("Annotation coverage per split")
     ax.yaxis.grid(True)
     ax.xaxis.grid(False)
     ax.legend(frameon=False)
@@ -1009,9 +1002,7 @@ def generate_figures(report, raw):
         hist_data[key] = {"bin_edges": [round(e, 4) for e in edges.tolist()],
                           "counts": n.tolist(), "median": round(med, 4),
                           "note": "histogram clipped at the 99th percentile"}
-    fig.suptitle("Instance geometry distributions (pixels, from polygon extents)",
-                 fontsize=13, fontweight="bold", color="#0b0b0b")
-    fig.tight_layout(rect=[0, 0, 1, 0.97])
+    fig.tight_layout()
     figures.append(_save(fig, "bbox_dimension_distributions",
                          {"chart": "histogram_small_multiples", "unit": "pixels",
                           "histograms": hist_data}))
@@ -1027,7 +1018,6 @@ def generate_figures(report, raw):
                    edgecolors="none", label=class_name(cid))
     ax.set_xlabel("Width (px)")
     ax.set_ylabel("Height (px)")
-    ax.set_title("Instance width vs height by class")
     ax.legend(frameon=False, markerscale=1.5, fontsize=9)
     ax.grid(True)
     figures.append(_save(fig, "bbox_width_height_scatter",
@@ -1049,7 +1039,6 @@ def generate_figures(report, raw):
             color="#e34948", fontsize=9, ha="left")
     ax.set_xlabel("File size (KB)")
     ax.set_ylabel("Images")
-    ax.set_title("Image file-size distribution")
     ax.yaxis.grid(True)
     ax.xaxis.grid(False)
     figures.append(_save(fig, "image_file_size_distribution",
@@ -1074,7 +1063,6 @@ def generate_figures(report, raw):
                    cmap=blue_ramp, interpolation="nearest", aspect=frame_aspect)
     ax.set_xlabel("x centroid (normalized)")
     ax.set_ylabel("y centroid (normalized)")
-    ax.set_title("Mask centroid spatial distribution")
     ax.grid(False)
     cbar = fig.colorbar(im, ax=ax, fraction=0.025, pad=0.02)
     cbar.set_label("Instances", color="#52514e")
@@ -1099,7 +1087,6 @@ def generate_figures(report, raw):
             fontsize=9, ha="left")
     ax.set_xlabel("Instances per image")
     ax.set_ylabel("Images")
-    ax.set_title("Annotation density (instances per image)")
     ax.yaxis.grid(True)
     ax.xaxis.grid(False)
     figures.append(_save(fig, "objects_per_image",
@@ -1120,7 +1107,6 @@ def generate_figures(report, raw):
     ax.set_xticklabels([class_name(cid) for cid in present_ids], rotation=20, ha="right")
     ax.set_ylabel("Bounding-box area (px²)")
     ax.set_yscale("log")
-    ax.set_title("Bounding-box area by class")
     ax.yaxis.grid(True)
     ax.xaxis.grid(False)
     figures.append(_save(fig, "bbox_area_by_class",
@@ -1145,7 +1131,6 @@ def generate_figures(report, raw):
         ax.set_xticklabels([class_name(present_ids[i]) for i in keep], rotation=20, ha="right")
         ax.set_yscale("log")
     ax.set_ylabel("Mask area (px²)")
-    ax.set_title("Mask (polygon) area by class")
     ax.yaxis.grid(True)
     ax.xaxis.grid(False)
     figures.append(_save(fig, "mask_area_by_class",
@@ -1172,7 +1157,6 @@ def generate_figures(report, raw):
             fontsize=8, va="center", ha="left")
     ax.set_ylabel("Mask area / bounding-box area")
     ax.set_ylim(0, 1.05)
-    ax.set_title("Mask fill ratio by class")
     ax.yaxis.grid(True)
     ax.xaxis.grid(False)
     figures.append(_save(fig, "mask_fill_ratio_by_class",
@@ -1200,7 +1184,6 @@ def generate_figures(report, raw):
         n, edges, med = np.array([]), np.array([]), 0.0
     ax.set_xlabel("Vertices per polygon (clipped at the 99th percentile)")
     ax.set_ylabel("Instances")
-    ax.set_title("Polygon vertex-count distribution")
     ax.yaxis.grid(True)
     ax.xaxis.grid(False)
     figures.append(_save(fig, "polygon_vertex_distribution",
@@ -1227,7 +1210,6 @@ def generate_figures(report, raw):
                         fontsize=8, fontweight="bold")
         left += vals
     ax.set_xlabel("Instances", labelpad=8)
-    ax.set_title("Instance size categories by class")
     ax.xaxis.grid(True)
     ax.yaxis.grid(False)
     ax.legend(frameon=False, ncol=3, loc="upper center", bbox_to_anchor=(0.5, -0.19),
@@ -1258,7 +1240,6 @@ def generate_figures(report, raw):
                         color="#ffffff", fontsize=8, fontweight="bold")
         left += frac
     ax.set_xlabel("Share of instances (%)", labelpad=8)
-    ax.set_title("Class composition across splits")
     ax.set_xlim(0, 100)
     ax.xaxis.grid(True)
     ax.yaxis.grid(False)
@@ -1278,27 +1259,79 @@ def generate_figures(report, raw):
         if a < k and b < k:
             matrix[a, b] = count
             matrix[b, a] = count
-    fig, ax = plt.subplots(figsize=(7.5, 6.5))
-    im = ax.imshow(matrix, cmap=blue_ramp)
-    ax.set_xticks(range(k))
-    ax.set_yticks(range(k))
-    ax.set_xticklabels(names, rotation=35, ha="right")
-    ax.set_yticklabels(names)
-    ax.set_title("Class co-occurrence (images sharing both classes)")
-    ax.grid(False)
-    thresh = matrix.max() * 0.55 if matrix.max() else 1
-    for i in range(k):
-        for j in range(k):
-            ax.text(j, i, str(matrix[i, j]), ha="center", va="center", fontsize=9,
-                    color="#ffffff" if matrix[i, j] > thresh else "#0b0b0b")
-    cbar = fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
-    cbar.set_label("Images", color="#52514e")
-    cbar.outline.set_edgecolor("#c3c2b7")
-    figures.append(_save(fig, "class_cooccurrence",
-                         {"chart": "matrix", "classes": names,
-                          "note": "diagonal = images containing the class; off-diagonal = images containing both",
-                          "matrix": matrix.tolist()}))
-    plt.close(fig)
+    # The matrix is symmetric, so the upper triangle repeats the lower one:
+    # only the lower triangle (diagonal = images containing the class) is drawn.
+    tri = np.ma.masked_array(matrix, mask=np.triu(np.ones((k, k), dtype=bool), 1))
+    # Render this manuscript panel at its final physical size and with the same
+    # serif typography as the other two dataset-statistics panels.
+    with plt.rc_context():
+        _apply_paper_style()
+        ramp = blue_ramp.copy()
+        ramp.set_bad("#ffffff")
+        fig, ax = plt.subplots(figsize=(PANEL_W, PANEL_H))
+        fig.subplots_adjust(left=0.10, right=0.82, bottom=0.14, top=0.97)
+        im = ax.imshow(tri, cmap=ramp, vmin=0)
+        ax.set_xticks(range(k))
+        ax.set_yticks(range(k))
+        codes = [PAPER_CLASS_CODE.get(nm, nm[:2].upper()) for nm in names]
+        definitions = [PAPER_CLASS_LABEL.get(nm, nm.replace("_", " ").capitalize())
+                       for nm in names]
+        ax.set_xticklabels(codes, rotation=0, ha="center", fontsize=7)
+        ax.set_yticklabels(codes, fontsize=7)
+        ax.tick_params(axis="both", pad=2)
+        ax.grid(False)
+        for spine in ax.spines.values():
+            spine.set_visible(False)
+
+        # Select annotation text from the rendered cell luminance. This keeps
+        # the counts readable without relying on colour or an arbitrary value
+        # threshold that may not track the colormap's lightness.
+        def annotation_color(value):
+            rgb = im.cmap(im.norm(value))[:3]
+
+            def linear(channel):
+                return (channel / 12.92 if channel <= 0.04045
+                        else ((channel + 0.055) / 1.055) ** 2.4)
+
+            luminance = (0.2126 * linear(rgb[0]) + 0.7152 * linear(rgb[1])
+                         + 0.0722 * linear(rgb[2]))
+            white_contrast = 1.05 / (luminance + 0.05)
+            ink_contrast = (luminance + 0.05) / 0.0533
+            return "#ffffff" if white_contrast >= ink_contrast else INK
+
+        for i in range(k):
+            for j in range(i + 1):
+                ax.text(j, i, str(matrix[i, j]), ha="center", va="center",
+                        fontsize=7, color=annotation_color(matrix[i, j]))
+
+        # Formal one-column key in the unused upper triangle, directly left of
+        # the frame-count scale. A thin rectangular rule groups the definitions
+        # without introducing decorative colour or consuming extra panel space.
+        from matplotlib.patches import Rectangle
+        ax.add_patch(Rectangle(
+            (0.63, 0.625), 0.35, 0.32, transform=ax.transAxes,
+            fill=False, edgecolor=MUTED, linewidth=0.5, clip_on=False,
+        ))
+        key_positions = [(0.65, 0.905), (0.65, 0.825),
+                         (0.65, 0.745), (0.65, 0.665)]
+        for (x, y), code, definition in zip(key_positions, codes, definitions):
+            ax.text(x, y, code, transform=ax.transAxes, ha="left", va="center",
+                    fontsize=5.5, fontweight="semibold", color=INK)
+            ax.text(x + 0.055, y, definition, transform=ax.transAxes,
+                    ha="left", va="center", fontsize=5.5, color=INK)
+
+        cbar = fig.colorbar(im, ax=ax, fraction=0.05, pad=0.04)
+        cbar.set_label("Frame count", fontsize=6, color=INK, labelpad=3)
+        cbar.ax.tick_params(labelsize=6)
+        cbar.outline.set_edgecolor(MUTED)
+        figures.append(_save(
+            fig, "class_cooccurrence",
+            {"chart": "matrix", "classes": names, "class_codes": codes,
+             "note": "diagonal = images containing the class; off-diagonal = images containing both",
+             "matrix": matrix.tolist()},
+            dpi=600, bbox_inches=None,
+        ))
+        plt.close(fig)
 
     add_image_size_figure(figures, report, raw, plt)
     add_validation_figure(figures, report, plt)
@@ -1349,8 +1382,7 @@ def add_image_size_figure(figures, report, raw, plt):
     ax.set_ylim(0, max(ys) * 1.45)
     ax.grid(True)
 
-    fig.suptitle("Image size", fontsize=13, fontweight="bold", color="#0b0b0b")
-    fig.tight_layout(rect=[0, 0, 1, 0.94])
+    fig.tight_layout()
     figures.append(_save(fig, "image_size_distribution",
                          {"chart": "bar_and_scatter", "resolutions": resolutions,
                           "modes": ip["modes"], "formats": ip["formats"],
@@ -1384,7 +1416,6 @@ def add_validation_figure(figures, report, plt):
                 fontsize=14, color="#1baf7a", fontweight="bold", transform=ax.transAxes)
         ax.set_xticks([])
         ax.set_yticks([])
-    ax.set_title("Annotation validation issues")
     ax.xaxis.grid(True)
     ax.yaxis.grid(False)
     figures.append(_save(fig, "annotation_issues",
@@ -1486,8 +1517,6 @@ def add_sample_montage(figures, plt):
                       fontsize=8, color="#898781", labelpad=8)
         manifest.append({"image": img_path.name, "split": split, "instances": shapes})
 
-    title = "Sample annotated frames (intensity, polygons coloured by class"
-    axes[0].set_title(title + "; dashed = box-only row)" if has_box_rows else title + ")")
     # Shared class legend
     handles = [Rectangle((0, 0), 1, 1, fc=class_color(c), ec="none")
                for c in sorted(used_classes)]
@@ -1498,6 +1527,7 @@ def add_sample_montage(figures, plt):
     figures.append(_save(fig, "sample_annotated_frames",
                          {"chart": "image_montage",
                           "note": "qualitative examples; polygons in YOLO-normalised coords",
+                          "box_only_rows_shown": has_box_rows,
                           "samples": manifest}))
     plt.close(fig)
 
@@ -1552,9 +1582,18 @@ FIGURE_META = [
 # own so it can be placed independently; nothing here is collaged. The screen
 # figures above stay as they are — this is a separate, smaller set.
 
+# The head noun stays in every label: a fence and a fence pole are different
+# objects, and the dataset annotates the pole, not the thing it carries.
 PAPER_CLASS_LABEL = {
-    "fence_pole": "Fence", "gantry_sign_pole": "Gantry", "light_pole": "Light",
-    "power_pole": "Power", "traffic_pole": "Traffic",
+    "fence_pole": "Fence pole", "gantry_sign_pole": "Gantry pole",
+    "light_pole": "Light pole", "power_pole": "Power pole",
+    "traffic_pole": "Traffic pole",
+}
+# Single-letter codes maximize the matrix area; the co-occurrence panel defines
+# them in a formal text-only key placed in its unused upper triangle.
+PAPER_CLASS_CODE = {
+    "fence_pole": "F", "gantry_sign_pole": "G", "light_pole": "L",
+    "power_pole": "P", "traffic_pole": "T",
 }
 # Marker shape carries identity alongside hue, so the classes stay separable in
 # greyscale print and for readers who cannot use the colour channel.
@@ -1598,15 +1637,22 @@ def _apply_paper_style():
         "axes.grid": False,
         "axes.spines.top": False,
         "axes.spines.right": False,
-        "pdf.fonttype": 42,
-        "ps.fonttype": 42,
     })
 
 
-def _save_paper(fig, name):
-    """Write one standalone paper figure as PDF (vector, for LaTeX)."""
-    path = PAPER_FIGURE_DIR / f"{name}.pdf"
-    fig.savefig(path)
+def _save_paper(fig, name, data=None):
+    """Write one standalone paper figure as a print-resolution PNG.
+
+    Takes the same companion-JSON contract as _save when the caller passes the
+    plotted quantities, so a figure whose numbers appear in the prose can be
+    checked against its source. Figures that render imagery rather than derived
+    values pass no data and get a PNG only.
+    """
+    path = FIGURE_DIR / f"{name}.png"
+    fig.savefig(path, dpi=600)
+    if data is not None:
+        with open(FIGURE_DIR / f"{name}.json", "w") as f:
+            json.dump(data, f, indent=2)
     import matplotlib.pyplot as plt
     plt.close(fig)
     return path
@@ -1615,109 +1661,6 @@ def _save_paper(fig, name):
 def _polygon_mask(raw):
     """Boolean mask selecting polygon instances; box rows have no mask geometry."""
     return [k == "polygon" for k in raw["kinds"]]
-
-
-def _frame_area_px(report):
-    """Pixel area of the dominant frame resolution, e.g. '1024x128' -> 131072."""
-    res = next(iter(report["image_properties"]["resolutions"]), None)
-    if not res or "x" not in res:
-        return 1
-    w, h = res.split("x")
-    return int(w) * int(h)
-
-
-def paper_fig_instance_size(report, raw, plt):
-    """Mask-area distribution with the COCO small/medium/large boundaries."""
-    import numpy as np
-
-    keep = _polygon_mask(raw)
-    areas = np.array([a for a, k in zip(raw["mask_areas_px"], keep) if k])
-    frame = _frame_area_px(report)
-    small_t, med_t = (t * frame for t in SIZE_CATEGORY_THRESHOLDS)
-
-    fig, ax = plt.subplots(figsize=(COL_W, 1.85))
-    fig.subplots_adjust(left=0.145, right=0.98, bottom=0.235, top=0.94)
-    bins = np.logspace(np.log10(max(areas.min(), 0.5)), np.log10(areas.max()), 34)
-    ax.hist(areas, bins=bins, color="#2a78d6", edgecolor="white", linewidth=0.3)
-    ax.set_xscale("log")
-    for x in (small_t, med_t):
-        ax.axvline(x, color=INK, lw=0.7, ls=(0, (3, 2)))
-
-    n = len(areas)
-    shares = {c: sum(1 for a in areas if size_category(a / frame) == c) / n
-              for c in SIZE_CATEGORIES}
-    ymax = ax.get_ylim()[1]
-    ax.set_ylim(0, ymax * 1.28)
-    for xpos, cat, label in ((small_t / 25, "small", "small"),
-                             (small_t * 2.8, "medium", "medium")):
-        ax.text(xpos, ymax * 1.24, f"{label}\n{shares[cat] * 100:.0f}%",
-                ha="center", va="top", fontsize=5.8, color=INK2, linespacing=1.15)
-    ax.set_xlim(bins[0] * 0.8, bins[-1] * 2.2)
-    ax.set_xlabel("Mask area (px, log)")
-    ax.set_ylabel("Instances")
-    return _save_paper(fig, "instance_size")
-
-
-def paper_fig_class_cooccurrence(raw, plt):
-    """Lower-triangular class co-occurrence: how often two classes share a frame.
-
-    The diagonal is omitted on purpose — it is the per-class image count, which
-    Table I already carries, and at 466 it would swamp the colour ramp and leave
-    every off-diagonal cell white. Classes are ordered by instance frequency so
-    the strongest pairs sit top-left.
-    """
-    import numpy as np
-    import matplotlib as mpl
-
-    freq = Counter(raw["class_ids"])
-    order = sorted(range(len(CLASS_NAMES)), key=lambda c: -freq.get(c, 0))
-    pairs = raw["cooccurrence"]
-
-    def pair_count(a, b):
-        return pairs.get(f"{min(a, b)},{max(a, b)}", 0)
-
-    n = len(order)
-    rows, cols = order[1:], order[:-1]           # drop the empty first row / last col
-    grid = np.full((n - 1, n - 1), np.nan)
-    for i, ra in enumerate(rows):
-        for j, cb in enumerate(cols):
-            if j <= i:
-                grid[i, j] = pair_count(ra, cb)
-
-    fig, ax = plt.subplots(figsize=(PANEL_W, PANEL_H))
-    fig.subplots_adjust(left=0.215, right=0.99, bottom=0.02, top=0.86)
-    finite = grid[np.isfinite(grid)]
-    # pcolormesh (not imshow) so empty cells are genuinely absent and the white
-    # cell separation is a drawn edge rather than an interpolated seam.
-    edges = np.arange(n) - 0.5
-    im = ax.pcolormesh(edges, edges, np.ma.masked_invalid(grid), cmap="Blues",
-                       norm=mpl.colors.LogNorm(vmin=max(finite.min(), 1),
-                                               vmax=finite.max()),
-                       edgecolors="white", linewidth=1.2)
-    ax.invert_yaxis()
-    ax.set_aspect("equal")
-
-    # Counts are labelled on every cell; the ramp is reinforcement, not the only
-    # channel. Ink flips to white once the cell is dark enough to need it.
-    hi = np.log10(max(finite.max(), 2))
-    for i in range(n - 1):
-        for j in range(n - 1):
-            if not np.isfinite(grid[i, j]):
-                continue
-            v = int(grid[i, j])
-            dark = np.log10(max(v, 1)) / hi > 0.70  # every label clears 4.5:1
-            ax.text(j, i, f"{v}", ha="center", va="center", fontsize=6.5,
-                    color="white" if dark else INK)
-
-    ax.set_xticks(range(n - 1))
-    ax.set_yticks(range(n - 1))
-    ax.set_xticklabels([PAPER_CLASS_LABEL.get(CLASS_NAMES[c], CLASS_NAMES[c]) for c in cols])
-    ax.set_yticklabels([PAPER_CLASS_LABEL.get(CLASS_NAMES[c], CLASS_NAMES[c]) for c in rows])
-    ax.xaxis.set_ticks_position("top")
-    ax.tick_params(length=0, pad=2)
-    for spine in ax.spines.values():
-        spine.set_visible(False)
-    return _save_paper(fig, "class_cooccurrence")
 
 
 def paper_fig_instance_shape(raw, plt):
@@ -1734,65 +1677,131 @@ def paper_fig_instance_shape(raw, plt):
     fig.subplots_adjust(left=0.185, right=0.975, bottom=0.165, top=0.97)
     ax.hexbin(w, h, xscale="log", yscale="log", gridsize=26, mincnt=1,
               cmap="Greys", norm=mpl.colors.LogNorm(vmax=90), linewidths=0, alpha=0.85)
-    for ratio, label, at in ((1, "h = w", 105), (10, "h = 10w", 9.0)):
-        xs = np.array([0.7, 400])
-        ax.plot(xs, ratio * xs, color=INK, lw=0.6, ls=(0, (3, 2)), zorder=3)
-        ax.text(at, at * ratio * 1.30, label, fontsize=5.8, color=INK2,
-                rotation=32, ha="center")
+    # h = ratio*w is unit-slope in log space for every ratio, so the three
+    # guides are parallel. w = 10h bounds the wide-and-short corner the gantry
+    # spans occupy, as h = 10w bounds the thin upright poles. Drawn after the
+    # limits are set, below, so their labels can be rotated onto them.
+    guides = ((1, "h = w", 105), (10, "h = 10w", 9.0), (0.1, "w = 10h", 150))
 
-    # (x-factor, y-factor, ha) offsets keep the direct labels off their markers
-    # and off each other; Power and Light have near-identical medians.
-    offsets = {"fence_pole": (0.55, 1.0, "right"),
-               "gantry_sign_pole": (1.0, 0.60, "center"),
-               "light_pole": (1.85, 1.18, "left"),
-               "power_pole": (0.74, 1.06, "right"),
-               "traffic_pole": (1.0, 0.58, "center")}
+    medians = {}
     for cid, name in enumerate(CLASS_NAMES):
         xs = [x for x, c in zip(w, cls) if c == cid]
         ys = [y for y, c in zip(h, cls) if c == cid]
         if not xs:
             continue
         mx, my = float(np.median(xs)), float(np.median(ys))
+        # Median of the per-instance ratio, not the ratio of the two medians:
+        # the marker sits at the latter, but the former is the honest summary
+        # of how elongated the class is.
+        medians[name] = {
+            "n": len(xs),
+            "median_width_px": mx,
+            "median_height_px": my,
+            "median_aspect_h_over_w": float(np.median(np.array(ys) / np.array(xs))),
+        }
         ax.plot(mx, my, PAPER_CLASS_MARKER.get(name, "o"), color=class_color(cid),
-                ms=5, mec="white", mew=0.7, zorder=5)
-        dx, dy, ha = offsets.get(name, (1.0, 1.4, "center"))
-        ax.annotate(PAPER_CLASS_LABEL.get(name, name), (mx * dx, my * dy),
-                    color=INK, fontsize=6, ha=ha, va="center", zorder=6)
+                ms=5, mec="white", mew=0.7, zorder=5, ls="none",
+                label=PAPER_CLASS_LABEL.get(name, name))
 
-    ax.set_xlim(0.85, 450)
-    ax.set_ylim(0.85, 200)
+    xlim, ylim = (0.85, 450), (0.85, 200)
+    ax.set_xlim(*xlim)
+    ax.set_ylim(*ylim)
     ax.set_xlabel("Width (px, log)")
     ax.set_ylabel("Height (px, log)")
-    return _save_paper(fig, "instance_shape")
+
+    # The angle a unit-slope log-log line subtends on the page is set by the
+    # axes' pixel aspect and by how many decades each axis spans, so it has to
+    # be measured off transData rather than assumed. Limits are fixed by this
+    # point and the panel uses explicit subplots_adjust, so the transform here
+    # is the one savefig will use. The label is then nudged along the line's
+    # own normal to clear it by a constant amount at any angle.
+    for ratio, label, at in guides:
+        xs = np.array([0.7, 400])
+        ax.plot(xs, ratio * xs, color=INK, lw=0.6, ls=(0, (3, 2)), zorder=3)
+        (x0, y0), (x1, y1) = ax.transData.transform([(1.0, ratio),
+                                                     (100.0, 100.0 * ratio)])
+        rot = float(np.degrees(np.arctan2(y1 - y0, x1 - x0)))
+        normal = np.radians(rot)
+        ax.annotate(label, (at, at * ratio), textcoords="offset points",
+                    xytext=(-np.sin(normal) * 2.5, np.cos(normal) * 2.5),
+                    fontsize=5.8, color=INK2, rotation=rot,
+                    rotation_mode="anchor", ha="center", va="bottom", zorder=4)
+    # A legend rather than direct annotation: the class medians sit close
+    # together in the middle of the density, where per-marker labels needed
+    # hand-tuned offsets to avoid each other. The lower-right corner, below the
+    # w = 10h guide, is the one region of the panel no instances reach.
+    # Opaque, edgeless ground rather than the frameon=False used elsewhere: at
+    # full class-name width the legend is wide enough that the w = 10h guide
+    # passes behind it, and masking the line reads better than clipping it.
+    ax.legend(loc="lower right", frameon=True, facecolor="white",
+              edgecolor="none", framealpha=1.0, ncol=1, numpoints=1,
+              handlelength=1.0, handletextpad=0.4, borderaxespad=0.3,
+              labelspacing=0.28, borderpad=0.35).set_zorder(7)
+    data = {
+        "chart": "hexbin_log_log",
+        "measure": "instance bounding-box width vs height, source pixels",
+        "note": "polygon instances only; box-form rows carry no mask geometry "
+                "and are excluded",
+        "n_instances": int(w.size),
+        "axes": {"x": "width_px", "y": "height_px", "scale": "log",
+                 "xlim": list(xlim), "ylim": list(ylim)},
+        "guide_lines": [{"label": label, "height_over_width": ratio}
+                        for ratio, label, _ in guides],
+        "by_class": medians,
+    }
+    return _save_paper(fig, "instance_shape", data)
 
 
-def paper_fig_centroid_density(raw, plt):
-    """Where instances sit in the range image: azimuth vs elevation."""
+def paper_fig_mask_area_ecdf(report, raw, plt):
+    """Class-wise ECDF of source-resolution mask area.
+
+    Polygon rows use their shoelace area. A box-form row uses its bounding-box
+    area because that is the rectangular mask materialised by the training
+    pipeline. Degenerate zero-area annotations remain in the validation report
+    but cannot be represented on the logarithmic x-axis.
+    """
     import numpy as np
-    import matplotlib as mpl
 
-    keep = _polygon_mask(raw)
-    x = np.array([v for v, k in zip(raw["x_centers"], keep) if k])
-    y = np.array([v for v, k in zip(raw["y_centers"], keep) if k])
+    mask_area = np.array(raw["mask_areas_px"], dtype=float)
+    bbox_area = np.array(raw["bbox_areas_px"], dtype=float)
+    kinds = np.array(raw["kinds"], dtype=object)
+    classes = np.array(raw["class_ids"], dtype=int)
+    effective_area = np.where(kinds == "polygon", mask_area, bbox_area)
 
+    resolution = next(iter(report["image_properties"]["resolutions"]), None)
+    if not resolution or "x" not in resolution:
+        raise ValueError("A dominant image resolution is required for the ECDF")
+    frame_w, frame_h = (int(v) for v in resolution.split("x"))
+    small_t, medium_t = (t * frame_w * frame_h for t in SIZE_CATEGORY_THRESHOLDS)
+
+    line_styles = ["-", (0, (4, 2)), (0, (1, 1)), (0, (5, 1, 1, 1))]
     fig, ax = plt.subplots(figsize=(PANEL_W, PANEL_H))
-    # Fill the panel: the map is the smallest element in the 1x3 row otherwise.
-    # The cost is more vertical exaggeration, which the caption states.
-    fig.subplots_adjust(left=0.155, right=0.85, bottom=0.205, top=0.965)
-    counts, _, _ = np.histogram2d(x, y, bins=[48, 16], range=[[0, 1], [0, 1]])
-    im = ax.imshow(counts.T, origin="upper", extent=[0, 1, 1, 0], aspect="auto",
-                   cmap="Blues", interpolation="nearest")
-    ax.set_xticks([0, 0.5, 1])
-    ax.set_yticks([0, 0.5, 1])
-    ax.set_xlabel("Azimuth (normalised $u$)")
-    ax.set_ylabel("Elevation ($v$)")
-    cb = fig.colorbar(im, ax=ax, fraction=0.036, pad=0.03)
-    cb.set_label("Instances", fontsize=6.5, labelpad=1.5)
-    cb.ax.tick_params(labelsize=6, length=1.8)
-    cb.locator = mpl.ticker.MaxNLocator(nbins=4, integer=True)
-    cb.update_ticks()
-    cb.outline.set_linewidth(0.4)
-    return _save_paper(fig, "centroid_density")
+    fig.subplots_adjust(left=0.19, right=0.98, bottom=0.20, top=0.97)
+
+    positive = effective_area[effective_area > 0]
+    for cid, name in enumerate(CLASS_NAMES):
+        values = np.sort(effective_area[(classes == cid) & (effective_area > 0)])
+        if not values.size:
+            continue
+        cumulative = np.arange(1, values.size + 1) / values.size * 100
+        ax.step(values, cumulative, where="post", color=class_color(cid),
+                linestyle=line_styles[cid % len(line_styles)], linewidth=1.0,
+                label=PAPER_CLASS_LABEL.get(name, name))
+
+    for threshold, label in ((small_t, "S/M"), (medium_t, "M/L")):
+        ax.axvline(threshold, color=MUTED, lw=0.6, ls=(0, (3, 2)), zorder=0)
+        ax.text(threshold * 0.90, 4, label, rotation=90, ha="right", va="bottom",
+                fontsize=5.5, color=MUTED)
+
+    ax.set_xscale("log")
+    ax.set_xlim(max(positive.min() * 0.8, 0.1), positive.max() * 1.25)
+    ax.set_ylim(0, 101)
+    ax.set_yticks([0, 25, 50, 75, 100])
+    ax.set_xlabel("Mask area (px$^2$, log)")
+    ax.set_ylabel("Cumulative share (%)")
+    ax.legend(loc="upper left", frameon=False, ncol=1,
+              handlelength=2.2, borderaxespad=0.2, labelspacing=0.25)
+    return _save_paper(fig, "mask_area_ecdf")
 
 
 def paper_fig_sample_frames(plt, n=3):
@@ -1851,18 +1860,17 @@ def paper_fig_sample_frames(plt, n=3):
 
 
 def generate_paper_figures(report, raw):
-    """Render the standalone manuscript figures into PAPER_FIGURE_DIR."""
+    """Render the standalone manuscript figures into FIGURE_DIR."""
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    PAPER_FIGURE_DIR.mkdir(parents=True, exist_ok=True)
+    FIGURE_DIR.mkdir(parents=True, exist_ok=True)
     _apply_paper_style()
     try:
         paths = [
-            paper_fig_class_cooccurrence(raw, plt),
             paper_fig_instance_shape(raw, plt),
-            paper_fig_centroid_density(raw, plt),
+            paper_fig_mask_area_ecdf(report, raw, plt),
         ]
         paths.extend(paper_fig_sample_frames(plt))
     finally:
@@ -2180,7 +2188,7 @@ def main():
     print(f"Generated {len(figures)} figures in: {FIGURE_DIR}")
     for p in figures:
         print(f"  - {p.name}  (+ {p.stem}.json)")
-    print(f"Generated {len(paper_figures)} paper figures in: {PAPER_FIGURE_DIR}")
+    print(f"Generated {len(paper_figures)} paper figures in: {FIGURE_DIR}")
     for p in paper_figures:
         print(f"  - {p.name}")
     if val["clean"]:

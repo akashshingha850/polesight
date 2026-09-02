@@ -532,6 +532,55 @@ def _write_json_report(
     return output
 
 
+def rows_from_report(
+    name: str, family: str, epochs, report: dict
+) -> list[dict]:
+    """Flatten one eval report into table rows, one per split and head.
+
+    Every head is emitted, not just the primary one: for an end2end model the
+    one2one/one2many pair is the NMS-free/NMS comparison, and keeping only the
+    primary half discards the only NMS ablation the sweep produces.
+    """
+    primary = report.get("primary_head", "default")
+    rows = []
+    for split, scored in report["splits"].items():
+        for head, chosen in scored.items():
+            row = {
+                "model": name,
+                "family": family,
+                "split": split,
+                "head": head,
+                "is_primary_head": head == primary,
+                "nms": head != "one2one",
+                "epochs": epochs,
+                "inference_ms": chosen["speed_ms"].get("inference"),
+                "postprocess_ms": chosen["speed_ms"].get("postprocess"),
+            }
+            for kind in ("box", "mask"):
+                for metric, value in chosen.get(kind, {}).items():
+                    if metric != "per_class":
+                        row[f"{kind}_{metric}"] = value
+                for class_name, values in chosen.get(kind, {}).get(
+                    "per_class", {}
+                ).items():
+                    for metric, value in values.items():
+                        row[f"{class_name}_{kind}_{metric}"] = value
+            rows.append(row)
+    return rows
+
+
+def write_eval_table(output_root: Path, rows: list[dict]) -> Path:
+    """Write the flat box/mask comparison table shared by sweeps and rebuilds."""
+    fields = list(dict.fromkeys(key for row in rows for key in row))
+    output = Path(output_root) / "eval_table.csv"
+    output.parent.mkdir(parents=True, exist_ok=True)
+    with output.open("w", newline="", encoding="utf-8") as stream:
+        writer = csv.DictWriter(stream, fieldnames=fields, extrasaction="ignore")
+        writer.writeheader()
+        writer.writerows(rows)
+    return output
+
+
 def eval_existing(config: dict, selected: list[str]) -> None:
     """Evaluate existing checkpoints and write a box/mask comparison table."""
     common = config["common"]
@@ -586,38 +635,11 @@ def eval_existing(config: dict, selected: list[str]) -> None:
                 **{k: v for k, v in report.items() if k != "model"},
             })
 
-            head = report.get("primary_head", "default")
-            for split, scored in report["splits"].items():
-                chosen = scored[head]
-                row = {
-                    "model": name,
-                    "family": family,
-                    "split": split,
-                    "head": head,
-                    "epochs": epochs,
-                    "inference_ms": chosen["speed_ms"].get("inference"),
-                    "postprocess_ms": chosen["speed_ms"].get("postprocess"),
-                }
-                for kind in ("box", "mask"):
-                    for metric, value in chosen.get(kind, {}).items():
-                        if metric != "per_class":
-                            row[f"{kind}_{metric}"] = value
-                    for class_name, values in chosen.get(kind, {}).get(
-                        "per_class", {}
-                    ).items():
-                        for metric, value in values.items():
-                            row[f"{class_name}_{kind}_{metric}"] = value
-                rows.append(row)
+            rows.extend(rows_from_report(name, family, epochs, report))
 
     if not rows:
         raise SystemExit("no checkpoints evaluated")
-    fields = list(dict.fromkeys(key for row in rows for key in row))
-    output = output_root / "eval_table.csv"
-    output.parent.mkdir(parents=True, exist_ok=True)
-    with output.open("w", newline="", encoding="utf-8") as stream:
-        writer = csv.DictWriter(stream, fieldnames=fields, extrasaction="ignore")
-        writer.writeheader()
-        writer.writerows(rows)
+    output = write_eval_table(output_root, rows)
     LOGGER.info(f"[eval] {len(rows)} rows -> {output}")
     _write_json_report(output_root, config, records, missing)
 
