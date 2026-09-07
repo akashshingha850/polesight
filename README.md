@@ -63,8 +63,12 @@ metric on it.
 
 Published results used Python 3.10.12, CUDA 12.8, and one RTX 2080 Ti (11 GB).
 
+The release lives on the `dataset` branch, which is what the paper links to —
+clone that branch rather than the default one:
+
 ```bash
-git clone <this-repo> polesight && cd polesight
+git clone -b dataset https://github.com/akashshingha850/polesight.git polesight
+cd polesight
 python3 -m venv .venv && source .venv/bin/activate
 
 # PyTorch first — the published runs used a CUDA 12.8 build, which is not on
