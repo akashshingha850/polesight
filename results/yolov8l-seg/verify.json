@@ -1,0 +1,15 @@
+{
+  "name": "yolov8l-seg",
+  "model": "yolov8l-seg.pt",
+  "epochs_run": 100,
+  "epochs_configured": 100,
+  "early_stopped": false,
+  "best_epoch": 90,
+  "batch_actual": 8,
+  "optimizer_actual": "AdamW",
+  "end2end_actual": false,
+  "mosaic": 1.0,
+  "close_mosaic": 10,
+  "progloss_o2o_at_best": null,
+  "progloss_o2o_final": null
+}

@@ -1,0 +1,48 @@
+cff-version: 1.2.0
+title: "PoleSight: A Benchmark Dataset and Scalable Range-Image Generation Framework for Utility Pole Detection"
+message: "If you use this dataset or code, please cite the accompanying paper."
+type: dataset
+authors:
+  - family-names: "Mäenpää"
+    given-names: "Timo"
+    affiliation: "Biomimetics and Intelligent Systems, University of Oulu, Oulu, Finland"
+    orcid: "https://orcid.org/0009-0000-0177-9560"
+  - family-names: "Bappy"
+    given-names: "Akash"
+    affiliation: "Biomimetics and Intelligent Systems, University of Oulu, Oulu, Finland"
+  - family-names: "Ariram"
+    given-names: "Siva"
+    affiliation: "Biomimetics and Intelligent Systems, University of Oulu, Oulu, Finland"
+  - family-names: "Bavirisetti"
+    given-names: "Durga Prasad"
+    affiliation: "Department of Computer and Geospatial Sciences, University of Gävle, Gävle, Sweden"
+  - family-names: "Tikanmäki"
+    given-names: "Antti"
+    affiliation: "Biomimetics and Intelligent Systems, University of Oulu, Oulu, Finland"
+license: CC-BY-4.0
+license-url: "https://creativecommons.org/licenses/by/4.0/"
+keywords:
+  - LiDAR
+  - range image
+  - instance segmentation
+  - pole-like infrastructure
+  - mobile laser scanning
+  - benchmark dataset
+preferred-citation:
+  type: conference-paper
+  title: "PoleSight: A Benchmark Dataset and Scalable Range-Image Generation Framework for Utility Pole Detection"
+  authors:
+    - family-names: "Mäenpää"
+      given-names: "Timo"
+    - family-names: "Bappy"
+      given-names: "Akash"
+    - family-names: "Ariram"
+      given-names: "Siva"
+    - family-names: "Bavirisetti"
+      given-names: "Durga Prasad"
+    - family-names: "Tikanmäki"
+      given-names: "Antti"
+  year: 2026
+  # TODO: fill in once the paper is accepted.
+  collection-title: ""
+  doi: ""

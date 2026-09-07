@@ -1,0 +1,2055 @@
+{
+  "generated": "2026-09-01T05:47:43",
+  "project": "results",
+  "environment": {
+    "ultralytics": "8.4.19",
+    "torch": "2.10.0+cu128",
+    "cuda": "12.8",
+    "python": "3.10.12",
+    "gpu": {
+      "name": "NVIDIA GeForce RTX 2080 Ti",
+      "memory_gb": 10.6,
+      "capability": "7.5"
+    }
+  },
+  "dataset": {
+    "data_yaml": "./data/data.yaml",
+    "classes": [
+      "fence_pole",
+      "gantry_sign_pole",
+      "light_pole",
+      "traffic_pole"
+    ],
+    "images": {
+      "train": 870,
+      "valid": 109,
+      "test": 109
+    }
+  },
+  "config": {
+    "common": {
+      "data": "./data/data.yaml",
+      "project": "results",
+      "task": "segment",
+      "device": 0,
+      "epochs": 100,
+      "patience": 100,
+      "batch": 16,
+      "imgsz": 640,
+      "seed": 0,
+      "deterministic": true,
+      "min_batch": 4,
+      "workers": 8,
+      "cache": true,
+      "plots": true,
+      "val": true,
+      "split": "val",
+      "eval_splits": [
+        "test"
+      ]
+    },
+    "families": {
+      "yolov8": {
+        "variants": [
+          "n",
+          "s",
+          "m",
+          "l",
+          "x"
+        ],
+        "overrides": {},
+        "arms": null
+      },
+      "yolo11": {
+        "variants": [
+          "n",
+          "s",
+          "m",
+          "l",
+          "x"
+        ],
+        "overrides": {},
+        "arms": null
+      },
+      "yolo26": {
+        "variants": [
+          "n",
+          "s",
+          "m",
+          "l",
+          "x"
+        ],
+        "overrides": {},
+        "arms": null
+      }
+    }
+  },
+  "runs": [
+    {
+      "model": "yolov8l-seg",
+      "family": "yolov8",
+      "variant": "l",
+      "training": {
+        "name": "yolov8l-seg",
+        "model": "yolov8l-seg.pt",
+        "epochs_run": 100,
+        "epochs_configured": 100,
+        "early_stopped": false,
+        "best_epoch": 90,
+        "batch_actual": 8,
+        "optimizer_actual": "AdamW",
+        "end2end_actual": false,
+        "mosaic": 1.0,
+        "close_mosaic": 10,
+        "progloss_o2o_at_best": null,
+        "progloss_o2o_final": null,
+        "train_seconds": 2953.9,
+        "train_hours": 0.821,
+        "run_dir": "results/yolov8l-seg/yolov8l-seg"
+      },
+      "weights": "results/yolov8l-seg/yolov8l-seg/weights/best.pt",
+      "task": "segment",
+      "end2end": false,
+      "layers": 402,
+      "parameters": 45939132,
+      "gflops": 210.74,
+      "weights_mb": 87.98,
+      "splits": {
+        "test": {
+          "default": {
+            "box": {
+              "mAP50-95": 0.23372484551166028,
+              "mAP50": 0.4678742063094277,
+              "precision": 0.5972062498775227,
+              "recall": 0.4574386266681831,
+              "per_class": {
+                "fence_pole": {
+                  "precision": 0.4379244754368424,
+                  "recall": 0.1722916353204012,
+                  "mAP50": 0.20222058158703726,
+                  "mAP50-95": 0.0649037854796389
+                },
+                "gantry_sign_pole": {
+                  "precision": 0.6268117245077791,
+                  "recall": 0.6410256410256411,
+                  "mAP50": 0.5878332518852796,
+                  "mAP50-95": 0.3038273781472419
+                },
+                "light_pole": {
+                  "precision": 0.7489698482605606,
+                  "recall": 0.7261146496815286,
+                  "mAP50": 0.7546318918193576,
+                  "mAP50-95": 0.4510594357268903
+                },
+                "traffic_pole": {
+                  "precision": 0.575118951304909,
+                  "recall": 0.2903225806451613,
+                  "mAP50": 0.32681109994603624,
+                  "mAP50-95": 0.11510878269286999
+                }
+              }
+            },
+            "speed_ms": {
+              "preprocess": 0.07379434814830439,
+              "inference": 3.093793875016614,
+              "loss": 0.0005020853986433887,
+              "postprocess": 0.8151677539657562
+            },
+            "mask": {
+              "mAP50-95": 0.1043483829948015,
+              "mAP50": 0.263969356673599,
+              "precision": 0.38910073013667096,
+              "recall": 0.33876763959098805,
+              "per_class": {
+                "fence_pole": {
+                  "precision": 0.4557718374559065,
+                  "recall": 0.25263157894736843,
+                  "mAP50": 0.22533981492474836,
+                  "mAP50-95": 0.12180289593832687
+                },
+                "gantry_sign_pole": {
+                  "precision": 0.34072812652140844,
+                  "recall": 0.3974358974358974,
+                  "mAP50": 0.2568588573198421,
+                  "mAP50-95": 0.11238457084688971
+                },
+                "light_pole": {
+                  "precision": 0.45098416101469857,
+                  "recall": 0.4872611464968153,
+                  "mAP50": 0.3982583117296918,
+                  "mAP50-95": 0.13937180087081927
+                },
+                "traffic_pole": {
+                  "precision": 0.30891879555467033,
+                  "recall": 0.21774193548387097,
+                  "mAP50": 0.17542044272011387,
+                  "mAP50-95": 0.04383426432317011
+                }
+              }
+            }
+          }
+        }
+      },
+      "primary_head": "default"
+    },
+    {
+      "model": "yolov8m-seg",
+      "family": "yolov8",
+      "variant": "m",
+      "training": {
+        "name": "yolov8m-seg",
+        "model": "yolov8m-seg.pt",
+        "epochs_run": 100,
+        "epochs_configured": 100,
+        "early_stopped": false,
+        "best_epoch": 85,
+        "batch_actual": 16,
+        "optimizer_actual": "AdamW",
+        "end2end_actual": false,
+        "mosaic": 1.0,
+        "close_mosaic": 10,
+        "progloss_o2o_at_best": null,
+        "progloss_o2o_final": null,
+        "train_seconds": 1919.7,
+        "train_hours": 0.533,
+        "run_dir": "results/yolov8m-seg/yolov8m-seg"
+      },
+      "weights": "results/yolov8m-seg/yolov8m-seg/weights/best.pt",
+      "task": "segment",
+      "end2end": false,
+      "layers": 332,
+      "parameters": 27241964,
+      "gflops": 104.74,
+      "weights_mb": 52.25,
+      "splits": {
+        "test": {
+          "default": {
+            "box": {
+              "mAP50-95": 0.22824036636327563,
+              "mAP50": 0.47422039149940654,
+              "precision": 0.6014359689480882,
+              "recall": 0.46625804080858524,
+              "per_class": {
+                "fence_pole": {
+                  "precision": 0.550400654621487,
+                  "recall": 0.2,
+                  "mAP50": 0.2349104095881959,
+                  "mAP50-95": 0.0702092105185959
+                },
+                "gantry_sign_pole": {
+                  "precision": 0.6505587288449465,
+                  "recall": 0.6923076923076923,
+                  "mAP50": 0.6442294236297988,
+                  "mAP50-95": 0.31785190656980006
+                },
+                "light_pole": {
+                  "precision": 0.7518598475752498,
+                  "recall": 0.7388535031847133,
+                  "mAP50": 0.7442586471280233,
+                  "mAP50-95": 0.4349813850215364
+                },
+                "traffic_pole": {
+                  "precision": 0.45292464475066935,
+                  "recall": 0.23387096774193547,
+                  "mAP50": 0.27348308565160806,
+                  "mAP50-95": 0.08991896334317005
+                }
+              }
+            },
+            "speed_ms": {
+              "preprocess": 0.08511645804851427,
+              "inference": 3.163204925698698,
+              "loss": 0.0005305206420224741,
+              "postprocess": 0.8103378146989356
+            },
+            "mask": {
+              "mAP50-95": 0.10081220139239766,
+              "mAP50": 0.2611720551789844,
+              "precision": 0.3909314680566777,
+              "recall": 0.31959272172861547,
+              "per_class": {
+                "fence_pole": {
+                  "precision": 0.4953225626104075,
+                  "recall": 0.22105263157894736,
+                  "mAP50": 0.2147283107496575,
+                  "mAP50-95": 0.1300664753229955
+                },
+                "gantry_sign_pole": {
+                  "precision": 0.368063085177517,
+                  "recall": 0.41025641025641024,
+                  "mAP50": 0.31637701244831085,
+                  "mAP50-95": 0.10257186618185019
+                },
+                "light_pole": {
+                  "precision": 0.44060214963885574,
+                  "recall": 0.47770700636942676,
+                  "mAP50": 0.37384017912528833,
+                  "mAP50-95": 0.13149306343363634
+                },
+                "traffic_pole": {
+                  "precision": 0.25973807479993066,
+                  "recall": 0.1693548387096774,
+                  "mAP50": 0.13974271839268088,
+                  "mAP50-95": 0.03911740063110856
+                }
+              }
+            }
+          }
+        }
+      },
+      "primary_head": "default"
+    },
+    {
+      "model": "yolov8n-seg",
+      "family": "yolov8",
+      "variant": "n",
+      "training": {
+        "name": "yolov8n-seg",
+        "model": "yolov8n-seg.pt",
+        "epochs_run": 100,
+        "epochs_configured": 100,
+        "early_stopped": false,
+        "best_epoch": 63,
+        "batch_actual": 16,
+        "optimizer_actual": "AdamW",
+        "end2end_actual": false,
+        "mosaic": 1.0,
+        "close_mosaic": 10,
+        "progloss_o2o_at_best": null,
+        "progloss_o2o_final": null,
+        "train_seconds": 742.8,
+        "train_hours": 0.206,
+        "run_dir": "results/yolov8n-seg/yolov8n-seg"
+      },
+      "weights": "results/yolov8n-seg/yolov8n-seg/weights/best.pt",
+      "task": "segment",
+      "end2end": false,
+      "layers": 262,
+      "parameters": 3264396,
+      "gflops": 11.48,
+      "weights_mb": 6.43,
+      "splits": {
+        "test": {
+          "default": {
+            "box": {
+              "mAP50-95": 0.19261426423763184,
+              "mAP50": 0.39306248632094193,
+              "precision": 0.6309675139949417,
+              "recall": 0.34727252258318186,
+              "per_class": {
+                "fence_pole": {
+                  "precision": 0.43571699103583156,
+                  "recall": 0.10568079275447695,
+                  "mAP50": 0.1430441146324279,
+                  "mAP50-95": 0.03839261167444134
+                },
+                "gantry_sign_pole": {
+                  "precision": 0.5564193962023216,
+                  "recall": 0.5512820512820513,
+                  "mAP50": 0.5258760088674285,
+                  "mAP50-95": 0.2655882229518654
+                },
+                "light_pole": {
+                  "precision": 0.7788249734536399,
+                  "recall": 0.6337579617834395,
+                  "mAP50": 0.6891123254797714,
+                  "mAP50-95": 0.3921990295599921
+                },
+                "traffic_pole": {
+                  "precision": 0.7529086952879734,
+                  "recall": 0.09836928451275966,
+                  "mAP50": 0.21421749630413986,
+                  "mAP50-95": 0.07427719276422849
+                }
+              }
+            },
+            "speed_ms": {
+              "preprocess": 0.08084685029034767,
+              "inference": 1.1989642490009103,
+              "loss": 0.0005163414694300485,
+              "postprocess": 0.8281119970963635
+            },
+            "mask": {
+              "mAP50-95": 0.08085213206259231,
+              "mAP50": 0.23067378929241497,
+              "precision": 0.34294810843578055,
+              "recall": 0.28651658058471396,
+              "per_class": {
+                "fence_pole": {
+                  "precision": 0.3736791160797985,
+                  "recall": 0.17894736842105263,
+                  "mAP50": 0.16087857673792438,
+                  "mAP50-95": 0.08674181483345508
+                },
+                "gantry_sign_pole": {
+                  "precision": 0.28833782796538965,
+                  "recall": 0.41025641025641024,
+                  "mAP50": 0.28779855431020623,
+                  "mAP50-95": 0.08561690326095066
+                },
+                "light_pole": {
+                  "precision": 0.40772633635916866,
+                  "recall": 0.4681528662420382,
+                  "mAP50": 0.36815633639618617,
+                  "mAP50-95": 0.12378030665097464
+                },
+                "traffic_pole": {
+                  "precision": 0.3020491533387652,
+                  "recall": 0.08870967741935484,
+                  "mAP50": 0.10586168972534318,
+                  "mAP50-95": 0.027269503504988857
+                }
+              }
+            }
+          }
+        }
+      },
+      "primary_head": "default"
+    },
+    {
+      "model": "yolov8s-seg",
+      "family": "yolov8",
+      "variant": "s",
+      "training": {
+        "name": "yolov8s-seg",
+        "model": "yolov8s-seg.pt",
+        "epochs_run": 100,
+        "epochs_configured": 100,
+        "early_stopped": false,
+        "best_epoch": 98,
+        "batch_actual": 16,
+        "optimizer_actual": "AdamW",
+        "end2end_actual": false,
+        "mosaic": 1.0,
+        "close_mosaic": 10,
+        "progloss_o2o_at_best": null,
+        "progloss_o2o_final": null,
+        "train_seconds": 1116.4,
+        "train_hours": 0.31,
+        "run_dir": "results/yolov8s-seg/yolov8s-seg"
+      },
+      "weights": "results/yolov8s-seg/yolov8s-seg/weights/best.pt",
+      "task": "segment",
+      "end2end": false,
+      "layers": 262,
+      "parameters": 11791644,
+      "gflops": 40.18,
+      "weights_mb": 22.72,
+      "splits": {
+        "test": {
+          "default": {
+            "box": {
+              "mAP50-95": 0.22905663781208893,
+              "mAP50": 0.4470844446636427,
+              "precision": 0.5307044057644132,
+              "recall": 0.45407799274566346,
+              "per_class": {
+                "fence_pole": {
+                  "precision": 0.4282520667760113,
+                  "recall": 0.21052631578947367,
+                  "mAP50": 0.18969314268916213,
+                  "mAP50-95": 0.05371744383451114
+                },
+                "gantry_sign_pole": {
+                  "precision": 0.5481658361668994,
+                  "recall": 0.6377355216406837,
+                  "mAP50": 0.5977236957881401,
+                  "mAP50-95": 0.34216500900810043
+                },
+                "light_pole": {
+                  "precision": 0.6804011534796418,
+                  "recall": 0.7261146496815286,
+                  "mAP50": 0.7420574094647253,
+                  "mAP50-95": 0.42553143285466044
+                },
+                "traffic_pole": {
+                  "precision": 0.4659985666351007,
+                  "recall": 0.24193548387096775,
+                  "mAP50": 0.25886353071254325,
+                  "mAP50-95": 0.09481266555108364
+                }
+              }
+            },
+            "speed_ms": {
+              "preprocess": 0.09926422200071702,
+              "inference": 1.5445536604885934,
+              "loss": 0.0005597590443191179,
+              "postprocess": 0.841275949048203
+            },
+            "mask": {
+              "mAP50-95": 0.09157190319761435,
+              "mAP50": 0.2546139763328238,
+              "precision": 0.3366758523007588,
+              "recall": 0.34373378565781293,
+              "per_class": {
+                "fence_pole": {
+                  "precision": 0.2825394845549428,
+                  "recall": 0.2,
+                  "mAP50": 0.17900274151570011,
+                  "mAP50-95": 0.090056909351318
+                },
+                "gantry_sign_pole": {
+                  "precision": 0.3829906865268409,
+                  "recall": 0.47750202267610037,
+                  "mAP50": 0.32306948988124845,
+                  "mAP50-95": 0.10446813878753161
+                },
+                "light_pole": {
+                  "precision": 0.4239312577258321,
+                  "recall": 0.5038847328583771,
+                  "mAP50": 0.37563537629557914,
+                  "mAP50-95": 0.12732018283705882
+                },
+                "traffic_pole": {
+                  "precision": 0.2572419803954193,
+                  "recall": 0.1935483870967742,
+                  "mAP50": 0.1407482976387675,
+                  "mAP50-95": 0.04444238181454899
+                }
+              }
+            }
+          }
+        }
+      },
+      "primary_head": "default"
+    },
+    {
+      "model": "yolov8x-seg",
+      "family": "yolov8",
+      "variant": "x",
+      "training": {
+        "name": "yolov8x-seg",
+        "model": "yolov8x-seg.pt",
+        "epochs_run": 100,
+        "epochs_configured": 100,
+        "early_stopped": false,
+        "best_epoch": 90,
+        "batch_actual": 8,
+        "optimizer_actual": "AdamW",
+        "end2end_actual": false,
+        "mosaic": 1.0,
+        "close_mosaic": 10,
+        "progloss_o2o_at_best": null,
+        "progloss_o2o_final": null,
+        "train_seconds": 4549.4,
+        "train_hours": 1.264,
+        "run_dir": "results/yolov8x-seg/yolov8x-seg"
+      },
+      "weights": "results/yolov8x-seg/yolov8x-seg/weights/best.pt",
+      "task": "segment",
+      "end2end": false,
+      "layers": 402,
+      "parameters": 71754700,
+      "gflops": 328.79,
+      "weights_mb": 137.25,
+      "splits": {
+        "test": {
+          "default": {
+            "box": {
+              "mAP50-95": 0.2341204736966988,
+              "mAP50": 0.48955950284803346,
+              "precision": 0.6392138548946878,
+              "recall": 0.47609585003386123,
+              "per_class": {
+                "fence_pole": {
+                  "precision": 0.6117919662247155,
+                  "recall": 0.25263157894736843,
+                  "mAP50": 0.268818740065731,
+                  "mAP50-95": 0.08224233828158142
+                },
+                "gantry_sign_pole": {
+                  "precision": 0.5735294245762954,
+                  "recall": 0.5897435897435898,
+                  "mAP50": 0.5646505557591406,
+                  "mAP50-95": 0.27668760674655607
+                },
+                "light_pole": {
+                  "precision": 0.7764956728682977,
+                  "recall": 0.7420382165605095,
+                  "mAP50": 0.7535642952508461,
+                  "mAP50-95": 0.44643145881886015
+                },
+                "traffic_pole": {
+                  "precision": 0.5950383559094428,
+                  "recall": 0.31997001488397736,
+                  "mAP50": 0.37120442031641626,
+                  "mAP50-95": 0.13112049093979766
+                }
+              }
+            },
+            "speed_ms": {
+              "preprocess": 0.08469484233801518,
+              "inference": 4.373811183223894,
+              "loss": 0.0005226962507591335,
+              "postprocess": 0.7616848377254578
+            },
+            "mask": {
+              "mAP50-95": 0.10301850302156061,
+              "mAP50": 0.26714682075784824,
+              "precision": 0.3711590929462313,
+              "recall": 0.3518698578145686,
+              "per_class": {
+                "fence_pole": {
+                  "precision": 0.3590261981537941,
+                  "recall": 0.25263157894736843,
+                  "mAP50": 0.22348804490724558,
+                  "mAP50-95": 0.12519066426905032
+                },
+                "gantry_sign_pole": {
+                  "precision": 0.3301486519414631,
+                  "recall": 0.3791646799254529,
+                  "mAP50": 0.26113098480489483,
+                  "mAP50-95": 0.09650043948235162
+                },
+                "light_pole": {
+                  "precision": 0.4809314353114568,
+                  "recall": 0.5095541401273885,
+                  "mAP50": 0.4030777424477014,
+                  "mAP50-95": 0.141307749010557
+                },
+                "traffic_pole": {
+                  "precision": 0.3145300863782111,
+                  "recall": 0.2661290322580645,
+                  "mAP50": 0.1808905108715511,
+                  "mAP50-95": 0.049075159324283475
+                }
+              }
+            }
+          }
+        }
+      },
+      "primary_head": "default"
+    },
+    {
+      "model": "yolo11l-seg",
+      "family": "yolo11",
+      "variant": "l",
+      "training": {
+        "name": "yolo11l-seg",
+        "model": "yolo11l-seg.pt",
+        "epochs_run": 100,
+        "epochs_configured": 100,
+        "early_stopped": false,
+        "best_epoch": 90,
+        "batch_actual": 8,
+        "optimizer_actual": "AdamW",
+        "end2end_actual": false,
+        "mosaic": 1.0,
+        "close_mosaic": 10,
+        "progloss_o2o_at_best": null,
+        "progloss_o2o_final": null,
+        "train_seconds": 2768.8,
+        "train_hours": 0.769,
+        "run_dir": "results/yolo11l-seg/yolo11l-seg"
+      },
+      "weights": "results/yolo11l-seg/yolo11l-seg/weights/best.pt",
+      "task": "segment",
+      "end2end": false,
+      "layers": 668,
+      "parameters": 27619772,
+      "gflops": 132.61,
+      "weights_mb": 53.22,
+      "splits": {
+        "test": {
+          "default": {
+            "box": {
+              "mAP50-95": 0.24087525759977071,
+              "mAP50": 0.48048606879952704,
+              "precision": 0.6732020757241491,
+              "recall": 0.44809637435403876,
+              "per_class": {
+                "fence_pole": {
+                  "precision": 0.6243768443526425,
+                  "recall": 0.18947368421052632,
+                  "mAP50": 0.21368574093552478,
+                  "mAP50-95": 0.06726315076148812
+                },
+                "gantry_sign_pole": {
+                  "precision": 0.7007642045664599,
+                  "recall": 0.6410256410256411,
+                  "mAP50": 0.6264797826017886,
+                  "mAP50-95": 0.323467597334966
+                },
+                "light_pole": {
+                  "precision": 0.7861447548154012,
+                  "recall": 0.7038216560509554,
+                  "mAP50": 0.7562688992237041,
+                  "mAP50-95": 0.4544751490243361
+                },
+                "traffic_pole": {
+                  "precision": 0.5815224991620931,
+                  "recall": 0.25806451612903225,
+                  "mAP50": 0.32550985243709063,
+                  "mAP50-95": 0.11829513327829262
+                }
+              }
+            },
+            "speed_ms": {
+              "preprocess": 0.08428308241274379,
+              "inference": 2.1928835579048878,
+              "loss": 0.000600186133876853,
+              "postprocess": 0.8363574337419294
+            },
+            "mask": {
+              "mAP50-95": 0.09751019542404879,
+              "mAP50": 0.27306091542063665,
+              "precision": 0.43008921886923035,
+              "recall": 0.3100797169149578,
+              "per_class": {
+                "fence_pole": {
+                  "precision": 0.5364413385311526,
+                  "recall": 0.2,
+                  "mAP50": 0.21031826349631172,
+                  "mAP50-95": 0.11049756354490252
+                },
+                "gantry_sign_pole": {
+                  "precision": 0.4018744272267266,
+                  "recall": 0.41025641025641024,
+                  "mAP50": 0.34785912632331656,
+                  "mAP50-95": 0.10316888986443504
+                },
+                "light_pole": {
+                  "precision": 0.4701968922118446,
+                  "recall": 0.4607076186937434,
+                  "mAP50": 0.383519955407588,
+                  "mAP50-95": 0.1324335388860888
+                },
+                "traffic_pole": {
+                  "precision": 0.3118442175071977,
+                  "recall": 0.1693548387096774,
+                  "mAP50": 0.1505463164553304,
+                  "mAP50-95": 0.043940789400768905
+                }
+              }
+            }
+          }
+        }
+      },
+      "primary_head": "default"
+    },
+    {
+      "model": "yolo11m-seg",
+      "family": "yolo11",
+      "variant": "m",
+      "training": {
+        "name": "yolo11m-seg",
+        "model": "yolo11m-seg.pt",
+        "epochs_run": 100,
+        "epochs_configured": 100,
+        "early_stopped": false,
+        "best_epoch": 70,
+        "batch_actual": 16,
+        "optimizer_actual": "AdamW",
+        "end2end_actual": false,
+        "mosaic": 1.0,
+        "close_mosaic": 10,
+        "progloss_o2o_at_best": null,
+        "progloss_o2o_final": null,
+        "train_seconds": 2149.7,
+        "train_hours": 0.597,
+        "run_dir": "results/yolo11m-seg/yolo11m-seg"
+      },
+      "weights": "results/yolo11m-seg/yolo11m-seg/weights/best.pt",
+      "task": "segment",
+      "end2end": false,
+      "layers": 446,
+      "parameters": 22362300,
+      "gflops": 113.53,
+      "weights_mb": 43.03,
+      "splits": {
+        "test": {
+          "default": {
+            "box": {
+              "mAP50-95": 0.23148271523513655,
+              "mAP50": 0.44837633824424855,
+              "precision": 0.5629591504181556,
+              "recall": 0.4610017594879392,
+              "per_class": {
+                "fence_pole": {
+                  "precision": 0.471706458840222,
+                  "recall": 0.25263157894736843,
+                  "mAP50": 0.22207852285271645,
+                  "mAP50-95": 0.07088059272019413
+                },
+                "gantry_sign_pole": {
+                  "precision": 0.5824816080073202,
+                  "recall": 0.6282051282051282,
+                  "mAP50": 0.5817122377787823,
+                  "mAP50-95": 0.3227514780570388
+                },
+                "light_pole": {
+                  "precision": 0.6950804816988061,
+                  "recall": 0.7292993630573248,
+                  "mAP50": 0.7424588370349978,
+                  "mAP50-95": 0.44696671515660924
+                },
+                "traffic_pole": {
+                  "precision": 0.5025680531262742,
+                  "recall": 0.23387096774193547,
+                  "mAP50": 0.24725575531049745,
+                  "mAP50-95": 0.08533207500670392
+                }
+              }
+            },
+            "speed_ms": {
+              "preprocess": 0.09207474281413293,
+              "inference": 1.7716391289760485,
+              "loss": 0.0006614334095235265,
+              "postprocess": 0.8730640006892451
+            },
+            "mask": {
+              "mAP50-95": 0.09307974231121649,
+              "mAP50": 0.26050212706188336,
+              "precision": 0.4000246427872134,
+              "recall": 0.3164585985233993,
+              "per_class": {
+                "fence_pole": {
+                  "precision": 0.42398138666563856,
+                  "recall": 0.22105263157894736,
+                  "mAP50": 0.18554896409690014,
+                  "mAP50-95": 0.10005576660537349
+                },
+                "gantry_sign_pole": {
+                  "precision": 0.386489252925485,
+                  "recall": 0.41025641025641024,
+                  "mAP50": 0.33260244475561646,
+                  "mAP50-95": 0.10482706275204642
+                },
+                "light_pole": {
+                  "precision": 0.45917651482199484,
+                  "recall": 0.4812995458066267,
+                  "mAP50": 0.3929489005359734,
+                  "mAP50-95": 0.13261735180600057
+                },
+                "traffic_pole": {
+                  "precision": 0.3304514167357351,
+                  "recall": 0.1532258064516129,
+                  "mAP50": 0.13090819885904348,
+                  "mAP50-95": 0.034818788081445506
+                }
+              }
+            }
+          }
+        }
+      },
+      "primary_head": "default"
+    },
+    {
+      "model": "yolo11n-seg",
+      "family": "yolo11",
+      "variant": "n",
+      "training": {
+        "name": "yolo11n-seg",
+        "model": "yolo11n-seg.pt",
+        "epochs_run": 100,
+        "epochs_configured": 100,
+        "early_stopped": false,
+        "best_epoch": 96,
+        "batch_actual": 16,
+        "optimizer_actual": "AdamW",
+        "end2end_actual": false,
+        "mosaic": 1.0,
+        "close_mosaic": 10,
+        "progloss_o2o_at_best": null,
+        "progloss_o2o_final": null,
+        "train_seconds": 827.0,
+        "train_hours": 0.23,
+        "run_dir": "results/yolo11n-seg/yolo11n-seg"
+      },
+      "weights": "results/yolo11n-seg/yolo11n-seg/weights/best.pt",
+      "task": "segment",
+      "end2end": false,
+      "layers": 356,
+      "parameters": 2843388,
+      "gflops": 9.73,
+      "weights_mb": 5.69,
+      "splits": {
+        "test": {
+          "default": {
+            "box": {
+              "mAP50-95": 0.201185915222364,
+              "mAP50": 0.4227494364616308,
+              "precision": 0.5342383877952235,
+              "recall": 0.4367142866396012,
+              "per_class": {
+                "fence_pole": {
+                  "precision": 0.42463148384559896,
+                  "recall": 0.18947368421052632,
+                  "mAP50": 0.18172764753726883,
+                  "mAP50-95": 0.052766075685067346
+                },
+                "gantry_sign_pole": {
+                  "precision": 0.5287408088340405,
+                  "recall": 0.6617085085775889,
+                  "mAP50": 0.5804363586954447,
+                  "mAP50-95": 0.2932342451057738
+                },
+                "light_pole": {
+                  "precision": 0.6892247712725225,
+                  "recall": 0.7101910828025477,
+                  "mAP50": 0.7207705621319125,
+                  "mAP50-95": 0.3914113025107883
+                },
+                "traffic_pole": {
+                  "precision": 0.49435648722873193,
+                  "recall": 0.18548387096774194,
+                  "mAP50": 0.20806317748189726,
+                  "mAP50-95": 0.06733203758782655
+                }
+              }
+            },
+            "speed_ms": {
+              "preprocess": 0.09210455368076442,
+              "inference": 1.0311513105321914,
+              "loss": 0.0005580544676802574,
+              "postprocess": 0.8329456958304577
+            },
+            "mask": {
+              "mAP50-95": 0.08536652316396001,
+              "mAP50": 0.2325889076860136,
+              "precision": 0.3601548848983832,
+              "recall": 0.2813980560368695,
+              "per_class": {
+                "fence_pole": {
+                  "precision": 0.4002892339445258,
+                  "recall": 0.17894736842105263,
+                  "mAP50": 0.17068117107683226,
+                  "mAP50-95": 0.08919835158576046
+                },
+                "gantry_sign_pole": {
+                  "precision": 0.3169583303621076,
+                  "recall": 0.3974358974358974,
+                  "mAP50": 0.30125665547101316,
+                  "mAP50-95": 0.0949075232581081
+                },
+                "light_pole": {
+                  "precision": 0.42309682247343305,
+                  "recall": 0.43630573248407645,
+                  "mAP50": 0.3432285410442525,
+                  "mAP50-95": 0.12123522752593038
+                },
+                "traffic_pole": {
+                  "precision": 0.3002751528134664,
+                  "recall": 0.11290322580645161,
+                  "mAP50": 0.11518926315195646,
+                  "mAP50-95": 0.036124990286041055
+                }
+              }
+            }
+          }
+        }
+      },
+      "primary_head": "default"
+    },
+    {
+      "model": "yolo11s-seg",
+      "family": "yolo11",
+      "variant": "s",
+      "training": {
+        "name": "yolo11s-seg",
+        "model": "yolo11s-seg.pt",
+        "epochs_run": 100,
+        "epochs_configured": 100,
+        "early_stopped": false,
+        "best_epoch": 98,
+        "batch_actual": 16,
+        "optimizer_actual": "AdamW",
+        "end2end_actual": false,
+        "mosaic": 1.0,
+        "close_mosaic": 10,
+        "progloss_o2o_at_best": null,
+        "progloss_o2o_final": null,
+        "train_seconds": 1169.6,
+        "train_hours": 0.325,
+        "run_dir": "results/yolo11s-seg/yolo11s-seg"
+      },
+      "weights": "results/yolo11s-seg/yolo11s-seg/weights/best.pt",
+      "task": "segment",
+      "end2end": false,
+      "layers": 356,
+      "parameters": 10083836,
+      "gflops": 33.08,
+      "weights_mb": 19.53,
+      "splits": {
+        "test": {
+          "default": {
+            "box": {
+              "mAP50-95": 0.22372333193965938,
+              "mAP50": 0.4497965969859821,
+              "precision": 0.5351125251614831,
+              "recall": 0.4781227202285241,
+              "per_class": {
+                "fence_pole": {
+                  "precision": 0.42734569161626795,
+                  "recall": 0.21052631578947367,
+                  "mAP50": 0.21255567017135735,
+                  "mAP50-95": 0.06099487047239123
+                },
+                "gantry_sign_pole": {
+                  "precision": 0.5976594952198503,
+                  "recall": 0.6923076923076923,
+                  "mAP50": 0.6211409593492344,
+                  "mAP50-95": 0.32425129750045933
+                },
+                "light_pole": {
+                  "precision": 0.6588970033922344,
+                  "recall": 0.7515923566878981,
+                  "mAP50": 0.739035029059421,
+                  "mAP50-95": 0.4302305504244114
+                },
+                "traffic_pole": {
+                  "precision": 0.4565479104175795,
+                  "recall": 0.25806451612903225,
+                  "mAP50": 0.2264547293639157,
+                  "mAP50-95": 0.0794166093613757
+                }
+              }
+            },
+            "speed_ms": {
+              "preprocess": 0.08834380049839478,
+              "inference": 1.0632776586902797,
+              "loss": 0.0006233346264023299,
+              "postprocess": 0.9115130743097275
+            },
+            "mask": {
+              "mAP50-95": 0.08793894648840686,
+              "mAP50": 0.24452192296333852,
+              "precision": 0.33418532576027615,
+              "recall": 0.32973136025567545,
+              "per_class": {
+                "fence_pole": {
+                  "precision": 0.3588585307246322,
+                  "recall": 0.23157894736842105,
+                  "mAP50": 0.1858887075534816,
+                  "mAP50-95": 0.09566032516689246
+                },
+                "gantry_sign_pole": {
+                  "precision": 0.33744298385623644,
+                  "recall": 0.4230769230769231,
+                  "mAP50": 0.2876933002156755,
+                  "mAP50-95": 0.09076132072275649
+                },
+                "light_pole": {
+                  "precision": 0.4285605800637989,
+                  "recall": 0.5191082802547771,
+                  "mAP50": 0.38699651835542487,
+                  "mAP50-95": 0.12550892206325845
+                },
+                "traffic_pole": {
+                  "precision": 0.2118792083964371,
+                  "recall": 0.14516129032258066,
+                  "mAP50": 0.11750916572877212,
+                  "mAP50-95": 0.03982521800072007
+                }
+              }
+            }
+          }
+        }
+      },
+      "primary_head": "default"
+    },
+    {
+      "model": "yolo11x-seg",
+      "family": "yolo11",
+      "variant": "x",
+      "training": {
+        "name": "yolo11x-seg",
+        "model": "yolo11x-seg.pt",
+        "epochs_run": 100,
+        "epochs_configured": 100,
+        "early_stopped": false,
+        "best_epoch": 92,
+        "batch_actual": 8,
+        "optimizer_actual": "AdamW",
+        "end2end_actual": false,
+        "mosaic": 1.0,
+        "close_mosaic": 10,
+        "progloss_o2o_at_best": null,
+        "progloss_o2o_final": null,
+        "train_seconds": 4614.2,
+        "train_hours": 1.282,
+        "run_dir": "results/yolo11x-seg/yolo11x-seg"
+      },
+      "weights": "results/yolo11x-seg/yolo11x-seg/weights/best.pt",
+      "task": "segment",
+      "end2end": false,
+      "layers": 668,
+      "parameters": 62054876,
+      "gflops": 297.05,
+      "weights_mb": 118.96,
+      "splits": {
+        "test": {
+          "default": {
+            "box": {
+              "mAP50-95": 0.23047857642874017,
+              "mAP50": 0.44988552593302555,
+              "precision": 0.5970557683028527,
+              "recall": 0.43690472575917516,
+              "per_class": {
+                "fence_pole": {
+                  "precision": 0.521812246524244,
+                  "recall": 0.17894736842105263,
+                  "mAP50": 0.19751520553821023,
+                  "mAP50-95": 0.061589078549139385
+                },
+                "gantry_sign_pole": {
+                  "precision": 0.6016601422348092,
+                  "recall": 0.6282051282051282,
+                  "mAP50": 0.553769520585133,
+                  "mAP50-95": 0.2906494560585354
+                },
+                "light_pole": {
+                  "precision": 0.7403801313577527,
+                  "recall": 0.7388535031847133,
+                  "mAP50": 0.7673964433301503,
+                  "mAP50-95": 0.46069429457966643
+                },
+                "traffic_pole": {
+                  "precision": 0.5243705530946048,
+                  "recall": 0.20161290322580644,
+                  "mAP50": 0.2808609342786087,
+                  "mAP50-95": 0.10898147652761955
+                }
+              }
+            },
+            "speed_ms": {
+              "preprocess": 0.08385593430438174,
+              "inference": 5.221133002874638,
+              "loss": 0.0006032941025604895,
+              "postprocess": 1.227145008486482
+            },
+            "mask": {
+              "mAP50-95": 0.08631856158428157,
+              "mAP50": 0.2470901282812197,
+              "precision": 0.3843632327116059,
+              "recall": 0.3255897424806187,
+              "per_class": {
+                "fence_pole": {
+                  "precision": 0.4826481145725844,
+                  "recall": 0.22105263157894736,
+                  "mAP50": 0.21736904895763737,
+                  "mAP50-95": 0.08556998618229125
+                },
+                "gantry_sign_pole": {
+                  "precision": 0.3433907582642709,
+                  "recall": 0.41025641025641024,
+                  "mAP50": 0.2510289970649605,
+                  "mAP50-95": 0.08298512339667191
+                },
+                "light_pole": {
+                  "precision": 0.42978935548889147,
+                  "recall": 0.49363057324840764,
+                  "mAP50": 0.38430214224527803,
+                  "mAP50-95": 0.13575604793014404
+                },
+                "traffic_pole": {
+                  "precision": 0.28162470252067684,
+                  "recall": 0.1774193548387097,
+                  "mAP50": 0.13566032485700283,
+                  "mAP50-95": 0.0409630888280191
+                }
+              }
+            }
+          }
+        }
+      },
+      "primary_head": "default"
+    },
+    {
+      "model": "yolo26l-seg",
+      "family": "yolo26",
+      "variant": "l",
+      "training": {
+        "name": "yolo26l-seg",
+        "model": "yolo26l-seg.pt",
+        "epochs_run": 100,
+        "epochs_configured": 100,
+        "early_stopped": false,
+        "best_epoch": 97,
+        "batch_actual": 8,
+        "optimizer_actual": "AdamW",
+        "end2end_actual": true,
+        "mosaic": 1.0,
+        "close_mosaic": 10,
+        "progloss_o2o_at_best": 0.8787878787878788,
+        "progloss_o2o_final": 0.9,
+        "train_seconds": 3496.2,
+        "train_hours": 0.971,
+        "run_dir": "results/yolo26l-seg/yolo26l-seg"
+      },
+      "weights": "results/yolo26l-seg/yolo26l-seg/weights/best.pt",
+      "task": "segment",
+      "end2end": true,
+      "layers": 767,
+      "parameters": 31378804,
+      "gflops": 150.29,
+      "weights_mb": 60.47,
+      "splits": {
+        "test": {
+          "one2one": {
+            "box": {
+              "mAP50-95": 0.2527794829837357,
+              "mAP50": 0.4802157345632527,
+              "precision": 0.5490540776523667,
+              "recall": 0.4783137920763033,
+              "per_class": {
+                "fence_pole": {
+                  "precision": 0.3932613561241021,
+                  "recall": 0.21152092239087225,
+                  "mAP50": 0.23511016236677248,
+                  "mAP50-95": 0.08304354929810312
+                },
+                "gantry_sign_pole": {
+                  "precision": 0.576438658874199,
+                  "recall": 0.6153846153846154,
+                  "mAP50": 0.5923983743249736,
+                  "mAP50-95": 0.3360332713540534
+                },
+                "light_pole": {
+                  "precision": 0.6891849305640398,
+                  "recall": 0.7866242038216561,
+                  "mAP50": 0.78800177043269,
+                  "mAP50-95": 0.4603053445128885
+                },
+                "traffic_pole": {
+                  "precision": 0.5373313650471261,
+                  "recall": 0.29972542670806923,
+                  "mAP50": 0.30535263112857486,
+                  "mAP50-95": 0.1317357667698978
+                }
+              }
+            },
+            "speed_ms": {
+              "preprocess": 0.08692905101754249,
+              "inference": 2.2494900360737646,
+              "loss": 0.0005564161089308765,
+              "postprocess": 0.3754751363752085
+            },
+            "mask": {
+              "mAP50-95": 0.07931432832581402,
+              "mAP50": 0.2138963652336745,
+              "precision": 0.31959459652182937,
+              "recall": 0.28829871893306624,
+              "per_class": {
+                "fence_pole": {
+                  "precision": 0.22767828010072422,
+                  "recall": 0.12631578947368421,
+                  "mAP50": 0.10252530495646946,
+                  "mAP50-95": 0.054671245603217955
+                },
+                "gantry_sign_pole": {
+                  "precision": 0.3628334247032097,
+                  "recall": 0.3974358974358974,
+                  "mAP50": 0.27546809336656497,
+                  "mAP50-95": 0.09247671625718516
+                },
+                "light_pole": {
+                  "precision": 0.4071723427983304,
+                  "recall": 0.4681528662420382,
+                  "mAP50": 0.350779086625483,
+                  "mAP50-95": 0.12512913591160618
+                },
+                "traffic_pole": {
+                  "precision": 0.28069433848505304,
+                  "recall": 0.16129032258064516,
+                  "mAP50": 0.12681297598618063,
+                  "mAP50-95": 0.04498021553124679
+                }
+              }
+            }
+          },
+          "one2many": {
+            "box": {
+              "mAP50-95": 0.2596139659132178,
+              "mAP50": 0.5023146024518331,
+              "precision": 0.6089625568610006,
+              "recall": 0.4951295100242261,
+              "per_class": {
+                "fence_pole": {
+                  "precision": 0.4925367568984046,
+                  "recall": 0.24210526315789474,
+                  "mAP50": 0.26469372963245175,
+                  "mAP50-95": 0.09816971853403536
+                },
+                "gantry_sign_pole": {
+                  "precision": 0.6267577377949236,
+                  "recall": 0.6538461538461539,
+                  "mAP50": 0.6294961966273481,
+                  "mAP50-95": 0.3443834760624066
+                },
+                "light_pole": {
+                  "precision": 0.7394117377854491,
+                  "recall": 0.7861795263186623,
+                  "mAP50": 0.7964292497122323,
+                  "mAP50-95": 0.46988647732162053
+                },
+                "traffic_pole": {
+                  "precision": 0.5771439949652251,
+                  "recall": 0.29838709677419356,
+                  "mAP50": 0.3186392338353002,
+                  "mAP50-95": 0.1260161917348086
+                }
+              }
+            },
+            "speed_ms": {
+              "preprocess": 0.09479082761964666,
+              "inference": 2.2390283571573297,
+              "loss": 0.0007740379986139613,
+              "postprocess": 0.8713870027333224
+            },
+            "mask": {
+              "mAP50-95": 0.08029738990488473,
+              "mAP50": 0.2114966510176004,
+              "precision": 0.36349868909959604,
+              "recall": 0.2724840993088211,
+              "per_class": {
+                "fence_pole": {
+                  "precision": 0.27784081217281864,
+                  "recall": 0.11578947368421053,
+                  "mAP50": 0.09413357007592034,
+                  "mAP50-95": 0.05444367375512128
+                },
+                "gantry_sign_pole": {
+                  "precision": 0.40022250270401605,
+                  "recall": 0.38461538461538464,
+                  "mAP50": 0.3012495179711935,
+                  "mAP50-95": 0.10120444433374584
+                },
+                "light_pole": {
+                  "precision": 0.4281674948509918,
+                  "recall": 0.43630573248407645,
+                  "mAP50": 0.33230157703904395,
+                  "mAP50-95": 0.1175928871774394
+                },
+                "traffic_pole": {
+                  "precision": 0.3477639466705575,
+                  "recall": 0.1532258064516129,
+                  "mAP50": 0.1183019389842439,
+                  "mAP50-95": 0.047948554353232406
+                }
+              }
+            }
+          }
+        }
+      },
+      "primary_head": "one2one"
+    },
+    {
+      "model": "yolo26m-seg",
+      "family": "yolo26",
+      "variant": "m",
+      "training": {
+        "name": "yolo26m-seg",
+        "model": "yolo26m-seg.pt",
+        "epochs_run": 100,
+        "epochs_configured": 100,
+        "early_stopped": false,
+        "best_epoch": 86,
+        "batch_actual": 8,
+        "optimizer_actual": "AdamW",
+        "end2end_actual": true,
+        "mosaic": 1.0,
+        "close_mosaic": 10,
+        "progloss_o2o_at_best": 0.801010101010101,
+        "progloss_o2o_final": 0.9,
+        "train_seconds": 3039.2,
+        "train_hours": 0.844,
+        "run_dir": "results/yolo26m-seg/yolo26m-seg"
+      },
+      "weights": "results/yolo26m-seg/yolo26m-seg/weights/best.pt",
+      "task": "segment",
+      "end2end": true,
+      "layers": 570,
+      "parameters": 26975348,
+      "gflops": 131.89,
+      "weights_mb": 51.93,
+      "splits": {
+        "test": {
+          "one2one": {
+            "box": {
+              "mAP50-95": 0.25853209028373525,
+              "mAP50": 0.48280149695133084,
+              "precision": 0.6094539371687091,
+              "recall": 0.4580108717390599,
+              "per_class": {
+                "fence_pole": {
+                  "precision": 0.49096629737432373,
+                  "recall": 0.22105263157894736,
+                  "mAP50": 0.233851464267821,
+                  "mAP50-95": 0.09233218170083332
+                },
+                "gantry_sign_pole": {
+                  "precision": 0.6303479366537985,
+                  "recall": 0.6558850407070641,
+                  "mAP50": 0.5966623404877315,
+                  "mAP50-95": 0.33908623606680227
+                },
+                "light_pole": {
+                  "precision": 0.7321196539355845,
+                  "recall": 0.7292993630573248,
+                  "mAP50": 0.7884287384477723,
+                  "mAP50-95": 0.47735459997825186
+                },
+                "traffic_pole": {
+                  "precision": 0.5843818607111299,
+                  "recall": 0.22580645161290322,
+                  "mAP50": 0.3122634446019988,
+                  "mAP50-95": 0.1253553433890536
+                }
+              }
+            },
+            "speed_ms": {
+              "preprocess": 0.08474984377144126,
+              "inference": 2.1816937449396754,
+              "loss": 0.00054218994299753,
+              "postprocess": 0.3966176134764875
+            },
+            "mask": {
+              "mAP50-95": 0.08158707080209454,
+              "mAP50": 0.2169081019727157,
+              "precision": 0.3744757033512326,
+              "recall": 0.2672428396979077,
+              "per_class": {
+                "fence_pole": {
+                  "precision": 0.3480677485477728,
+                  "recall": 0.1368421052631579,
+                  "mAP50": 0.11012552672970258,
+                  "mAP50-95": 0.05059048768706792
+                },
+                "gantry_sign_pole": {
+                  "precision": 0.39050034030908837,
+                  "recall": 0.38461538461538464,
+                  "mAP50": 0.29768156188078554,
+                  "mAP50-95": 0.11342667649947372
+                },
+                "light_pole": {
+                  "precision": 0.46701626282785264,
+                  "recall": 0.4426751592356688,
+                  "mAP50": 0.34153123983112516,
+                  "mAP50-95": 0.11573380145104051
+                },
+                "traffic_pole": {
+                  "precision": 0.2923184617202165,
+                  "recall": 0.10483870967741936,
+                  "mAP50": 0.11829407944924958,
+                  "mAP50-95": 0.046597317570796014
+                }
+              }
+            }
+          },
+          "one2many": {
+            "box": {
+              "mAP50-95": 0.25814902678951623,
+              "mAP50": 0.5065909011180079,
+              "precision": 0.6342127214462209,
+              "recall": 0.49740546464950364,
+              "per_class": {
+                "fence_pole": {
+                  "precision": 0.587614201713013,
+                  "recall": 0.2700386372169711,
+                  "mAP50": 0.27968698077692067,
+                  "mAP50-95": 0.09701870231911655
+                },
+                "gantry_sign_pole": {
+                  "precision": 0.6645066357776,
+                  "recall": 0.6923076923076923,
+                  "mAP50": 0.6211549233538496,
+                  "mAP50-95": 0.3404037649710932
+                },
+                "light_pole": {
+                  "precision": 0.771518100010323,
+                  "recall": 0.7611464968152867,
+                  "mAP50": 0.7999509600206162,
+                  "mAP50-95": 0.4744517598324845
+                },
+                "traffic_pole": {
+                  "precision": 0.5132119482839475,
+                  "recall": 0.2661290322580645,
+                  "mAP50": 0.3255707403206453,
+                  "mAP50-95": 0.12072188003537081
+                }
+              }
+            },
+            "speed_ms": {
+              "preprocess": 0.08531663045628901,
+              "inference": 1.8334898717462198,
+              "loss": 0.0007050240053496229,
+              "postprocess": 0.9053248352448053
+            },
+            "mask": {
+              "mAP50-95": 0.08085981989905702,
+              "mAP50": 0.21589074260497043,
+              "precision": 0.3617644854608815,
+              "recall": 0.2849177521437176,
+              "per_class": {
+                "fence_pole": {
+                  "precision": 0.3062067443544235,
+                  "recall": 0.1368421052631579,
+                  "mAP50": 0.08373100299492928,
+                  "mAP50-95": 0.04510863495321894
+                },
+                "gantry_sign_pole": {
+                  "precision": 0.42751392217797274,
+                  "recall": 0.4358974358974359,
+                  "mAP50": 0.31337552578556466,
+                  "mAP50-95": 0.11328462327418602
+                },
+                "light_pole": {
+                  "precision": 0.4560522066035431,
+                  "recall": 0.43789920934976073,
+                  "mAP50": 0.34661784410245455,
+                  "mAP50-95": 0.12349160540434878
+                },
+                "traffic_pole": {
+                  "precision": 0.2572850687075867,
+                  "recall": 0.12903225806451613,
+                  "mAP50": 0.11983859753693325,
+                  "mAP50-95": 0.0415544159644743
+                }
+              }
+            }
+          }
+        }
+      },
+      "primary_head": "one2one"
+    },
+    {
+      "model": "yolo26n-seg",
+      "family": "yolo26",
+      "variant": "n",
+      "training": {
+        "name": "yolo26n-seg",
+        "model": "yolo26n-seg.pt",
+        "epochs_run": 100,
+        "epochs_configured": 100,
+        "early_stopped": false,
+        "best_epoch": 88,
+        "batch_actual": 16,
+        "optimizer_actual": "AdamW",
+        "end2end_actual": true,
+        "mosaic": 1.0,
+        "close_mosaic": 10,
+        "progloss_o2o_at_best": 0.8151515151515152,
+        "progloss_o2o_final": 0.9,
+        "train_seconds": 1188.9,
+        "train_hours": 0.33,
+        "run_dir": "results/yolo26n-seg/yolo26n-seg"
+      },
+      "weights": "results/yolo26n-seg/yolo26n-seg/weights/best.pt",
+      "task": "segment",
+      "end2end": true,
+      "layers": 534,
+      "parameters": 3054420,
+      "gflops": 10.17,
+      "weights_mb": 6.2,
+      "splits": {
+        "test": {
+          "one2one": {
+            "box": {
+              "mAP50-95": 0.19372754796769479,
+              "mAP50": 0.39451278630234166,
+              "precision": 0.49512749881305196,
+              "recall": 0.4191454182909844,
+              "per_class": {
+                "fence_pole": {
+                  "precision": 0.37084445882965617,
+                  "recall": 0.17894736842105263,
+                  "mAP50": 0.15333172247489277,
+                  "mAP50-95": 0.047719699443317685
+                },
+                "gantry_sign_pole": {
+                  "precision": 0.5307631633939566,
+                  "recall": 0.5641025641025641,
+                  "mAP50": 0.5079049889031902,
+                  "mAP50-95": 0.2675869695342038
+                },
+                "light_pole": {
+                  "precision": 0.651122143819858,
+                  "recall": 0.6835317406403207,
+                  "mAP50": 0.7052343429198505,
+                  "mAP50-95": 0.3875752407826964
+                },
+                "traffic_pole": {
+                  "precision": 0.42778022920873726,
+                  "recall": 0.25,
+                  "mAP50": 0.2115800909114331,
+                  "mAP50-95": 0.07202828211056118
+                }
+              }
+            },
+            "speed_ms": {
+              "preprocess": 0.09633355705631436,
+              "inference": 1.071750540969842,
+              "loss": 0.0005232388102406755,
+              "postprocess": 0.4381358563694932
+            },
+            "mask": {
+              "mAP50-95": 0.07815301073949119,
+              "mAP50": 0.21810424615808,
+              "precision": 0.34425473115087774,
+              "recall": 0.27712127060234076,
+              "per_class": {
+                "fence_pole": {
+                  "precision": 0.2888455922650304,
+                  "recall": 0.12631578947368421,
+                  "mAP50": 0.12304601538047316,
+                  "mAP50-95": 0.07229976635542718
+                },
+                "gantry_sign_pole": {
+                  "precision": 0.3997043984711595,
+                  "recall": 0.41025641025641024,
+                  "mAP50": 0.3422619497913191,
+                  "mAP50-95": 0.10213427865969893
+                },
+                "light_pole": {
+                  "precision": 0.4197503571701093,
+                  "recall": 0.4267515923566879,
+                  "mAP50": 0.29573058283996023,
+                  "mAP50-95": 0.10086003475919496
+                },
+                "traffic_pole": {
+                  "precision": 0.2687185766972118,
+                  "recall": 0.14516129032258066,
+                  "mAP50": 0.11137843662056751,
+                  "mAP50-95": 0.03731796318364371
+                }
+              }
+            }
+          },
+          "one2many": {
+            "box": {
+              "mAP50-95": 0.20727399807569755,
+              "mAP50": 0.4197262907033287,
+              "precision": 0.5488715182313684,
+              "recall": 0.4132898354919592,
+              "per_class": {
+                "fence_pole": {
+                  "precision": 0.48802294746560554,
+                  "recall": 0.18947368421052632,
+                  "mAP50": 0.17378070088647957,
+                  "mAP50-95": 0.049305338564489876
+                },
+                "gantry_sign_pole": {
+                  "precision": 0.5361910641718092,
+                  "recall": 0.5897435897435898,
+                  "mAP50": 0.5656512668746557,
+                  "mAP50-95": 0.2989024468398124
+                },
+                "light_pole": {
+                  "precision": 0.7250908898932505,
+                  "recall": 0.6803936809169464,
+                  "mAP50": 0.717223724759123,
+                  "mAP50-95": 0.40099757087236004
+                },
+                "traffic_pole": {
+                  "precision": 0.44618117139480834,
+                  "recall": 0.1935483870967742,
+                  "mAP50": 0.22224947029305633,
+                  "mAP50-95": 0.07989063602612781
+                }
+              }
+            },
+            "speed_ms": {
+              "preprocess": 0.09656079549239864,
+              "inference": 0.797676973454996,
+              "loss": 0.0007966652922674057,
+              "postprocess": 0.926148973046503
+            },
+            "mask": {
+              "mAP50-95": 0.06948775247848303,
+              "mAP50": 0.21172363289357857,
+              "precision": 0.35032210241158235,
+              "recall": 0.2593575685432227,
+              "per_class": {
+                "fence_pole": {
+                  "precision": 0.24103397809809463,
+                  "recall": 0.08421052631578947,
+                  "mAP50": 0.08685967119473777,
+                  "mAP50-95": 0.0475521573346327
+                },
+                "gantry_sign_pole": {
+                  "precision": 0.3751989805207291,
+                  "recall": 0.3974358974358974,
+                  "mAP50": 0.3138557716731202,
+                  "mAP50-95": 0.09340742338021563
+                },
+                "light_pole": {
+                  "precision": 0.46828425803960116,
+                  "recall": 0.4267515923566879,
+                  "mAP50": 0.3140143407026295,
+                  "mAP50-95": 0.09436048495429969
+                },
+                "traffic_pole": {
+                  "precision": 0.3167711929879045,
+                  "recall": 0.12903225806451613,
+                  "mAP50": 0.1321647480038268,
+                  "mAP50-95": 0.04263094424478413
+                }
+              }
+            }
+          }
+        }
+      },
+      "primary_head": "one2one"
+    },
+    {
+      "model": "yolo26s-seg",
+      "family": "yolo26",
+      "variant": "s",
+      "training": {
+        "name": "yolo26s-seg",
+        "model": "yolo26s-seg.pt",
+        "epochs_run": 100,
+        "epochs_configured": 100,
+        "early_stopped": false,
+        "best_epoch": 89,
+        "batch_actual": 16,
+        "optimizer_actual": "AdamW",
+        "end2end_actual": true,
+        "mosaic": 1.0,
+        "close_mosaic": 10,
+        "progloss_o2o_at_best": 0.8222222222222222,
+        "progloss_o2o_final": 0.9,
+        "train_seconds": 1630.9,
+        "train_hours": 0.453,
+        "run_dir": "results/yolo26s-seg/yolo26s-seg"
+      },
+      "weights": "results/yolo26s-seg/yolo26s-seg/weights/best.pt",
+      "task": "segment",
+      "end2end": true,
+      "layers": 534,
+      "parameters": 11437172,
+      "gflops": 37.09,
+      "weights_mb": 22.23,
+      "splits": {
+        "test": {
+          "one2one": {
+            "box": {
+              "mAP50-95": 0.232453122893974,
+              "mAP50": 0.4599747025318864,
+              "precision": 0.5266746668617088,
+              "recall": 0.46557620283897144,
+              "per_class": {
+                "fence_pole": {
+                  "precision": 0.408855214919338,
+                  "recall": 0.22105263157894736,
+                  "mAP50": 0.22911111070466528,
+                  "mAP50-95": 0.07267921854671008
+                },
+                "gantry_sign_pole": {
+                  "precision": 0.5971889833775931,
+                  "recall": 0.6282051282051282,
+                  "mAP50": 0.5582276149044575,
+                  "mAP50-95": 0.30532811883619737
+                },
+                "light_pole": {
+                  "precision": 0.6904872954132342,
+                  "recall": 0.7388535031847133,
+                  "mAP50": 0.7799599575046303,
+                  "mAP50-95": 0.44208022286890075
+                },
+                "traffic_pole": {
+                  "precision": 0.4101671737366703,
+                  "recall": 0.27419354838709675,
+                  "mAP50": 0.27260012701379227,
+                  "mAP50-95": 0.10972493132408785
+                }
+              }
+            },
+            "speed_ms": {
+              "preprocess": 0.09027666010714452,
+              "inference": 1.064647937518194,
+              "loss": 0.0007589979934583017,
+              "postprocess": 0.45237569095686486
+            },
+            "mask": {
+              "mAP50-95": 0.0836655881627939,
+              "mAP50": 0.22355692708088204,
+              "precision": 0.39886573925075886,
+              "recall": 0.2638758987768177,
+              "per_class": {
+                "fence_pole": {
+                  "precision": 0.4360878052233998,
+                  "recall": 0.12631578947368421,
+                  "mAP50": 0.11467076326846287,
+                  "mAP50-95": 0.05945940185314955
+                },
+                "gantry_sign_pole": {
+                  "precision": 0.43365779208053906,
+                  "recall": 0.39271770084624336,
+                  "mAP50": 0.31999452481928425,
+                  "mAP50-95": 0.11450290601743833
+                },
+                "light_pole": {
+                  "precision": 0.4580054870619719,
+                  "recall": 0.42356687898089174,
+                  "mAP50": 0.34222122208764316,
+                  "mAP50-95": 0.12180108509815904
+                },
+                "traffic_pole": {
+                  "precision": 0.2677118726371245,
+                  "recall": 0.11290322580645161,
+                  "mAP50": 0.11734119814813782,
+                  "mAP50-95": 0.038898959682428756
+                }
+              }
+            }
+          },
+          "one2many": {
+            "box": {
+              "mAP50-95": 0.23937255448460473,
+              "mAP50": 0.48520530502827686,
+              "precision": 0.5789708627173733,
+              "recall": 0.5010209687658065,
+              "per_class": {
+                "fence_pole": {
+                  "precision": 0.3924224917162067,
+                  "recall": 0.23157894736842105,
+                  "mAP50": 0.22156347286189804,
+                  "mAP50-95": 0.0719366967237974
+                },
+                "gantry_sign_pole": {
+                  "precision": 0.6045691347800548,
+                  "recall": 0.7051282051282052,
+                  "mAP50": 0.6201823099205036,
+                  "mAP50-95": 0.3161643895504965
+                },
+                "light_pole": {
+                  "precision": 0.7519063962879698,
+                  "recall": 0.7528605935343415,
+                  "mAP50": 0.783807191406557,
+                  "mAP50-95": 0.4545593414019279
+                },
+                "traffic_pole": {
+                  "precision": 0.5669854280852619,
+                  "recall": 0.31451612903225806,
+                  "mAP50": 0.3152682459241488,
+                  "mAP50-95": 0.11482979026219706
+                }
+              }
+            },
+            "speed_ms": {
+              "preprocess": 0.09503967017618889,
+              "inference": 1.068299147086816,
+              "loss": 0.0007152557373046875,
+              "postprocess": 0.9694661359823898
+            },
+            "mask": {
+              "mAP50-95": 0.0777499354756861,
+              "mAP50": 0.2189240240083639,
+              "precision": 0.42837832231675266,
+              "recall": 0.27023480450426696,
+              "per_class": {
+                "fence_pole": {
+                  "precision": 0.346344386181811,
+                  "recall": 0.10526315789473684,
+                  "mAP50": 0.08638551251774731,
+                  "mAP50-95": 0.04588789162516904
+                },
+                "gantry_sign_pole": {
+                  "precision": 0.4815918193126227,
+                  "recall": 0.4230769230769231,
+                  "mAP50": 0.3466485483590067,
+                  "mAP50-95": 0.12195698168563289
+                },
+                "light_pole": {
+                  "precision": 0.4873974196334736,
+                  "recall": 0.42356687898089174,
+                  "mAP50": 0.32730002307350864,
+                  "mAP50-95": 0.11256792832429201
+                },
+                "traffic_pole": {
+                  "precision": 0.39817966413910344,
+                  "recall": 0.12903225806451613,
+                  "mAP50": 0.11536201208319295,
+                  "mAP50-95": 0.030586940267650457
+                }
+              }
+            }
+          }
+        }
+      },
+      "primary_head": "one2one"
+    },
+    {
+      "model": "yolo26x-seg",
+      "family": "yolo26",
+      "variant": "x",
+      "training": {
+        "name": "yolo26x-seg",
+        "model": "yolo26x-seg.pt",
+        "epochs_run": 100,
+        "epochs_configured": 100,
+        "early_stopped": false,
+        "best_epoch": 88,
+        "batch_actual": 4,
+        "optimizer_actual": "AdamW",
+        "end2end_actual": true,
+        "mosaic": 1.0,
+        "close_mosaic": 10,
+        "progloss_o2o_at_best": 0.8151515151515152,
+        "progloss_o2o_final": 0.9,
+        "train_seconds": 6281.1,
+        "train_hours": 1.745,
+        "run_dir": "results/yolo26x-seg/yolo26x-seg"
+      },
+      "weights": "results/yolo26x-seg/yolo26x-seg/weights/best.pt",
+      "task": "segment",
+      "end2end": true,
+      "layers": 767,
+      "parameters": 70488980,
+      "gflops": 336.68,
+      "weights_mb": 135.14,
+      "splits": {
+        "test": {
+          "one2one": {
+            "box": {
+              "mAP50-95": 0.24063035019221032,
+              "mAP50": 0.4774730561936209,
+              "precision": 0.564367954977189,
+              "recall": 0.49060721600707413,
+              "per_class": {
+                "fence_pole": {
+                  "precision": 0.46111389640026973,
+                  "recall": 0.3152582884286081,
+                  "mAP50": 0.25606721258486587,
+                  "mAP50-95": 0.08569970527522472
+                },
+                "gantry_sign_pole": {
+                  "precision": 0.5836833789110613,
+                  "recall": 0.6025641025641025,
+                  "mAP50": 0.562358968865555,
+                  "mAP50-95": 0.27286787079596925
+                },
+                "light_pole": {
+                  "precision": 0.7040068093967305,
+                  "recall": 0.7356687898089171,
+                  "mAP50": 0.7736455908998375,
+                  "mAP50-95": 0.4692095590201305
+                },
+                "traffic_pole": {
+                  "precision": 0.5086677352006941,
+                  "recall": 0.30893768322666876,
+                  "mAP50": 0.3178204524242252,
+                  "mAP50-95": 0.1347442656775168
+                }
+              }
+            },
+            "speed_ms": {
+              "preprocess": 0.08933427273680311,
+              "inference": 5.096048349514604,
+              "loss": 0.0005642298198894623,
+              "postprocess": 0.4163972751468147
+            },
+            "mask": {
+              "mAP50-95": 0.08084481157548314,
+              "mAP50": 0.21572645525038828,
+              "precision": 0.3393304809662716,
+              "recall": 0.2977915767399281,
+              "per_class": {
+                "fence_pole": {
+                  "precision": 0.26653464990119685,
+                  "recall": 0.17894736842105263,
+                  "mAP50": 0.11596675437322178,
+                  "mAP50-95": 0.06427288621793081
+                },
+                "gantry_sign_pole": {
+                  "precision": 0.38785187641688934,
+                  "recall": 0.3980324853954586,
+                  "mAP50": 0.2718280660259631,
+                  "mAP50-95": 0.0966817530885932
+                },
+                "light_pole": {
+                  "precision": 0.44776045823705424,
+                  "recall": 0.4622135759947659,
+                  "mAP50": 0.3702834696879612,
+                  "mAP50-95": 0.1281824305097835
+                },
+                "traffic_pole": {
+                  "precision": 0.25517493930994617,
+                  "recall": 0.15197287714843538,
+                  "mAP50": 0.10482753091440701,
+                  "mAP50-95": 0.03424217648562501
+                }
+              }
+            }
+          },
+          "one2many": {
+            "box": {
+              "mAP50-95": 0.25421245816842114,
+              "mAP50": 0.5033539374350191,
+              "precision": 0.669749042885404,
+              "recall": 0.48269409682958503,
+              "per_class": {
+                "fence_pole": {
+                  "precision": 0.5181702401727369,
+                  "recall": 0.24210526315789474,
+                  "mAP50": 0.2533290104278722,
+                  "mAP50-95": 0.08574402163918589
+                },
+                "gantry_sign_pole": {
+                  "precision": 0.6626505203215963,
+                  "recall": 0.6538461538461539,
+                  "mAP50": 0.6147437547389081,
+                  "mAP50-95": 0.30993038478852225
+                },
+                "light_pole": {
+                  "precision": 0.7639753731691732,
+                  "recall": 0.7452229299363057,
+                  "mAP50": 0.7819150608260788,
+                  "mAP50-95": 0.48124676564604607
+                },
+                "traffic_pole": {
+                  "precision": 0.7342000378781095,
+                  "recall": 0.28960204037798604,
+                  "mAP50": 0.36342792374721755,
+                  "mAP50-95": 0.1399286605999303
+                }
+              }
+            },
+            "speed_ms": {
+              "preprocess": 0.08317034418156387,
+              "inference": 4.903742054545688,
+              "loss": 0.00047862504121907264,
+              "postprocess": 1.2437494689547415
+            },
+            "mask": {
+              "mAP50-95": 0.0765875659260066,
+              "mAP50": 0.20907186706898678,
+              "precision": 0.3695878575589142,
+              "recall": 0.2806998758057445,
+              "per_class": {
+                "fence_pole": {
+                  "precision": 0.310881019662157,
+                  "recall": 0.14736842105263157,
+                  "mAP50": 0.10094862750347608,
+                  "mAP50-95": 0.06494194465732668
+                },
+                "gantry_sign_pole": {
+                  "precision": 0.38886534235794323,
+                  "recall": 0.38461538461538464,
+                  "mAP50": 0.26993336429424913,
+                  "mAP50-95": 0.09008652857302238
+                },
+                "light_pole": {
+                  "precision": 0.46971499958561524,
+                  "recall": 0.46178343949044587,
+                  "mAP50": 0.3696751105321778,
+                  "mAP50-95": 0.12498350507654996
+                },
+                "traffic_pole": {
+                  "precision": 0.3088900686299414,
+                  "recall": 0.12903225806451613,
+                  "mAP50": 0.09573036594604417,
+                  "mAP50-95": 0.02633828539712741
+                }
+              }
+            }
+          }
+        }
+      },
+      "primary_head": "one2one"
+    }
+  ],
+  "incomplete": []
+}

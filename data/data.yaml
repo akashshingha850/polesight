@@ -1,0 +1,11 @@
+train: ../train/images
+val: ../valid/images
+test: ../test/images
+
+nc: 4
+names: ['fence_pole', 'gantry_sign_pole', 'light_pole', 'traffic_pole']
+
+roboflow:
+  workspace: polesight
+  project: polesight-7kgwj
+  version: 12

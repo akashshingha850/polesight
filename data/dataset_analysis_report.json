@@ -1,0 +1,432 @@
+{
+  "dataset_overview": {
+    "total_images": 1088,
+    "total_annotations": 6121,
+    "polygon_annotations": 6121,
+    "box_annotations": 0,
+    "images_with_annotations": 1059,
+    "background_images": 29,
+    "num_classes": 4,
+    "class_names": [
+      "fence_pole",
+      "gantry_sign_pole",
+      "light_pole",
+      "traffic_pole"
+    ],
+    "image_format": "PNG",
+    "annotation_format": "YOLO instance segmentation (normalized polygons)",
+    "original_resolution": "1024 x 128 pixels",
+    "training_resolution": "640 x 640 pixels (resized)",
+    "aspect_ratio": "8:1 (8.00:1)",
+    "color_space": "16-bit grayscale (single channel)",
+    "dataset_type": "Instance Segmentation",
+    "file_size_kb": {
+      "min": 7.6,
+      "max": 233.8,
+      "avg": 109.0,
+      "median": 106.3,
+      "total_files": 1088
+    }
+  },
+  "image_properties": {
+    "resolutions": {
+      "1024x128": 1088
+    },
+    "modes": {
+      "I;16": 1088
+    },
+    "formats": {
+      "PNG": 1088
+    },
+    "width": {
+      "mean": 1024.0,
+      "std": 0.0,
+      "min": 1024.0,
+      "max": 1024.0,
+      "median": 1024.0
+    },
+    "height": {
+      "mean": 128.0,
+      "std": 0.0,
+      "min": 128.0,
+      "max": 128.0,
+      "median": 128.0
+    },
+    "total_files": 1088
+  },
+  "splits": {
+    "train": {
+      "images": 870,
+      "labels": 870,
+      "annotated": 847,
+      "unannotated": 23,
+      "instances": {
+        "0": 770,
+        "1": 626,
+        "2": 2514,
+        "3": 990
+      },
+      "total_instances": 4900,
+      "image_pct": 79.96,
+      "instance_pct": 80.05
+    },
+    "valid": {
+      "images": 109,
+      "labels": 109,
+      "annotated": 106,
+      "unannotated": 3,
+      "instances": {
+        "0": 96,
+        "1": 78,
+        "2": 313,
+        "3": 123
+      },
+      "total_instances": 610,
+      "image_pct": 10.02,
+      "instance_pct": 9.97
+    },
+    "test": {
+      "images": 109,
+      "labels": 109,
+      "annotated": 106,
+      "unannotated": 3,
+      "instances": {
+        "0": 95,
+        "1": 78,
+        "2": 314,
+        "3": 124
+      },
+      "total_instances": 611,
+      "image_pct": 10.02,
+      "instance_pct": 9.98
+    }
+  },
+  "class_distribution": {
+    "fence_pole": {
+      "class_id": 0,
+      "count": 961,
+      "polygons": 961,
+      "boxes": 0,
+      "pct": 15.7,
+      "color": "#4a3aa7"
+    },
+    "gantry_sign_pole": {
+      "class_id": 1,
+      "count": 782,
+      "polygons": 782,
+      "boxes": 0,
+      "pct": 12.78,
+      "color": "#eda100"
+    },
+    "light_pole": {
+      "class_id": 2,
+      "count": 3141,
+      "polygons": 3141,
+      "boxes": 0,
+      "pct": 51.32,
+      "color": "#2a78d6"
+    },
+    "traffic_pole": {
+      "class_id": 3,
+      "count": 1237,
+      "polygons": 1237,
+      "boxes": 0,
+      "pct": 20.21,
+      "color": "#1baf7a"
+    }
+  },
+  "bounding_boxes": {
+    "total_instances": 6121,
+    "width": {
+      "mean": 0.018569840428340957,
+      "std": 0.029352979211575432,
+      "min": 0.0009765625,
+      "max": 0.41796875,
+      "median": 0.009765625
+    },
+    "height": {
+      "mean": 0.22546506087649076,
+      "std": 0.1695526084017467,
+      "min": 0.0078125,
+      "max": 0.9921875,
+      "median": 0.1796875
+    },
+    "area": {
+      "mean": 0.005912744730200284,
+      "std": 0.01707593764223172,
+      "min": 5.340576171875e-05,
+      "max": 0.408172607421875,
+      "median": 0.0018310546875
+    },
+    "aspect_ratio": {
+      "mean": 0.09992254039942497,
+      "std": 0.15738963177030216,
+      "min": 0.003125,
+      "max": 3.875,
+      "median": 0.058333333333333334
+    },
+    "width_px": {
+      "mean": 19.01551659862114,
+      "std": 30.057450712653242,
+      "min": 1.0,
+      "max": 428.0,
+      "median": 10.0
+    },
+    "height_px": {
+      "mean": 28.859527792190818,
+      "std": 21.70273387542358,
+      "min": 1.0,
+      "max": 127.0,
+      "median": 23.0
+    },
+    "area_px": {
+      "mean": 774.9952772768116,
+      "std": 2238.177298642596,
+      "min": 7.0,
+      "max": 53500.0,
+      "median": 240.0
+    },
+    "aspect_px": {
+      "mean": 0.7993803231953998,
+      "std": 1.2591170541624173,
+      "min": 0.025,
+      "max": 31.0,
+      "median": 0.4666666666666667
+    },
+    "objects_per_image": {
+      "mean": 5.779981114258734,
+      "std": 3.67413638650121,
+      "min": 1.0,
+      "max": 21.0,
+      "median": 5.0
+    },
+    "per_split": {
+      "train": {
+        "total_instances": 4900,
+        "class_counts": {
+          "0": 770,
+          "1": 626,
+          "2": 2514,
+          "3": 990
+        },
+        "width_px": {
+          "mean": 19.02632710060408,
+          "std": 30.188664458024792,
+          "min": 1.0,
+          "max": 428.0,
+          "median": 10.0
+        },
+        "height_px": {
+          "mean": 28.87385763755102,
+          "std": 21.593483205900956,
+          "min": 1.0,
+          "max": 127.0,
+          "median": 23.0
+        }
+      },
+      "valid": {
+        "total_instances": 610,
+        "class_counts": {
+          "0": 96,
+          "1": 78,
+          "2": 313,
+          "3": 123
+        },
+        "width_px": {
+          "mean": 18.873727700983608,
+          "std": 30.777708820360974,
+          "min": 1.0,
+          "max": 346.0,
+          "median": 10.0
+        },
+        "height_px": {
+          "mean": 28.708635160655735,
+          "std": 22.136472397033664,
+          "min": 3.0,
+          "max": 127.0,
+          "median": 23.0
+        }
+      },
+      "test": {
+        "total_instances": 611,
+        "class_counts": {
+          "0": 95,
+          "1": 78,
+          "2": 314,
+          "3": 124
+        },
+        "width_px": {
+          "mean": 19.070377102454994,
+          "std": 28.21851907243325,
+          "min": 1.0,
+          "max": 350.0,
+          "median": 11.0
+        },
+        "height_px": {
+          "mean": 28.895253263502457,
+          "std": 22.134439155388414,
+          "min": 2.0,
+          "max": 127.0,
+          "median": 23.0
+        }
+      }
+    }
+  },
+  "segmentation_geometry": {
+    "polygon_instances": 6121,
+    "box_instances": 0,
+    "vertices": {
+      "mean": 13.52834504165986,
+      "std": 12.384577922604807,
+      "min": 3.0,
+      "max": 166.0,
+      "median": 10.0
+    },
+    "mask_area_px": {
+      "mean": 167.0179566708648,
+      "std": 494.20999880457333,
+      "min": 0.5,
+      "max": 22761.5,
+      "median": 71.0
+    },
+    "fill_ratio": {
+      "mean": 0.3463626384715944,
+      "std": 0.22662308664577377,
+      "min": 0.002857142857142857,
+      "max": 1.0000000000017313,
+      "median": 0.28484848484848485
+    },
+    "size_category_thresholds": {
+      "small": "< 1024 px\u00b2 annotation area",
+      "medium": "1024\u2013<9216 px\u00b2 annotation area",
+      "large": ">= 9216 px\u00b2 annotation area"
+    },
+    "per_class": {
+      "fence_pole": {
+        "instances": 961,
+        "polygons": 961,
+        "vertices": {
+          "mean": 13.596253902185223,
+          "std": 13.26325722476374,
+          "min": 3.0,
+          "max": 79.0,
+          "median": 8.0
+        },
+        "mask_area_px": {
+          "mean": 63.75952143199677,
+          "std": 99.4934939991375,
+          "min": 0.5,
+          "max": 1339.9815680163883,
+          "median": 38.5
+        },
+        "fill_ratio": {
+          "mean": 0.46592820381911143,
+          "std": 0.25914298659415047,
+          "min": 0.018518518518518517,
+          "max": 1.0000000000017313,
+          "median": 0.4513888888888889
+        },
+        "size_categories": {
+          "small": 959,
+          "medium": 2,
+          "large": 0
+        }
+      },
+      "gantry_sign_pole": {
+        "instances": 782,
+        "polygons": 782,
+        "vertices": {
+          "mean": 22.135549872122763,
+          "std": 16.629005554171258,
+          "min": 3.0,
+          "max": 144.0,
+          "median": 18.0
+        },
+        "mask_area_px": {
+          "mean": 525.2077459245064,
+          "std": 1222.8671393023833,
+          "min": 2.5,
+          "max": 22761.5,
+          "median": 220.0
+        },
+        "fill_ratio": {
+          "mean": 0.23014741299111355,
+          "std": 0.14424100105258844,
+          "min": 0.014204545454545454,
+          "max": 1.0000000000000153,
+          "median": 0.19909262403320127
+        },
+        "size_categories": {
+          "small": 695,
+          "medium": 84,
+          "large": 3
+        }
+      },
+      "light_pole": {
+        "instances": 3141,
+        "polygons": 3141,
+        "vertices": {
+          "mean": 12.180197389366445,
+          "std": 11.09597516421303,
+          "min": 3.0,
+          "max": 166.0,
+          "median": 9.0
+        },
+        "mask_area_px": {
+          "mean": 119.29482210258813,
+          "std": 175.32709259491352,
+          "min": 0.5,
+          "max": 2566.0,
+          "median": 70.5
+        },
+        "fill_ratio": {
+          "mean": 0.2746277719791799,
+          "std": 0.20003106122542688,
+          "min": 0.002857142857142857,
+          "max": 1.0000000000003415,
+          "median": 0.21666666666666667
+        },
+        "size_categories": {
+          "small": 3116,
+          "medium": 25,
+          "large": 0
+        }
+      },
+      "traffic_pole": {
+        "instances": 1237,
+        "polygons": 1237,
+        "vertices": {
+          "mean": 11.457558609539207,
+          "std": 8.89428716883565,
+          "min": 4.0,
+          "max": 122.0,
+          "median": 9.0
+        },
+        "mask_area_px": {
+          "mean": 141.97778427568403,
+          "std": 285.7947127395532,
+          "min": 2.0,
+          "max": 3958.0,
+          "median": 58.5
+        },
+        "fill_ratio": {
+          "mean": 0.5090926414460858,
+          "std": 0.16738309410465788,
+          "min": 0.08885017421602788,
+          "max": 1.000000000000065,
+          "median": 0.48214285714285715
+        },
+        "size_categories": {
+          "small": 1218,
+          "medium": 19,
+          "large": 0
+        }
+      }
+    }
+  },
+  "validation": {
+    "total_issues": 0,
+    "clean": true,
+    "issues": {}
+  }
+}

@@ -1,0 +1,33 @@
+# Environment for the published PoleSight baselines.
+#
+# Versions are the ones recorded in results/results.json under "environment",
+# which is what the fifteen runs in results/ were produced with. Pinning them is
+# what makes the numbers in the baseline table reproducible; anything looser is
+# a different experiment.
+#
+# PyTorch is installed separately because the published runs used a CUDA 12.8
+# build, which does not come from PyPI's default index:
+#
+#   pip install torch==2.10.0 torchvision==0.25.0 \
+#       --index-url https://download.pytorch.org/whl/cu128
+#   pip install -r requirements.txt
+
+ultralytics==8.4.19
+numpy==2.2.6
+PyYAML==6.0.3
+matplotlib==3.10.8
+pillow==12.1.1
+opencv-python==4.13.0.92
+scipy==1.15.3
+pandas==2.3.3
+
+# Optional. train.py logs to Weights & Biases when it is importable and falls
+# back to a no-op otherwise, so tracking never blocks a reproduction run. Set
+# WANDB_DISABLED=1 to turn it off with the package installed.
+# wandb==0.25.0
+
+# Optional. Only scripts/dataset_prepare.py --source roboflow needs this, which
+# requires credentials for the authors' private annotation workspace. The
+# released dataset under data/ is already prepared, so reproduction never
+# reaches this path.
+# roboflow

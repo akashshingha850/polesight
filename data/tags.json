@@ -1,0 +1,1185 @@
+{
+  "source": "roboflow project image tags",
+  "generated": "2026-09-07 16:08:20",
+  "images": 1088,
+  "tagged_images": 318,
+  "tag_counts": {
+    "Light_Pole": 1,
+    "Knuutilanranta": 59,
+    "alakylantie": 217,
+    "autolabelled_poledetection": 258
+  },
+  "tags": {
+    "0001": [
+      "Light_Pole"
+    ],
+    "01691": [
+      "Knuutilanranta"
+    ],
+    "01700": [
+      "Knuutilanranta"
+    ],
+    "01707": [
+      "Knuutilanranta"
+    ],
+    "01719": [
+      "Knuutilanranta"
+    ],
+    "01723": [
+      "Knuutilanranta"
+    ],
+    "01735": [
+      "Knuutilanranta"
+    ],
+    "01756": [
+      "Knuutilanranta"
+    ],
+    "01792": [
+      "Knuutilanranta"
+    ],
+    "01853": [
+      "Knuutilanranta"
+    ],
+    "01863": [
+      "Knuutilanranta"
+    ],
+    "01864": [
+      "Knuutilanranta"
+    ],
+    "01949": [
+      "Knuutilanranta"
+    ],
+    "01955": [
+      "Knuutilanranta"
+    ],
+    "01959": [
+      "Knuutilanranta"
+    ],
+    "01960": [
+      "Knuutilanranta"
+    ],
+    "01964": [
+      "Knuutilanranta"
+    ],
+    "02412": [
+      "Knuutilanranta"
+    ],
+    "02413": [
+      "Knuutilanranta"
+    ],
+    "02414": [
+      "Knuutilanranta"
+    ],
+    "02430": [
+      "Knuutilanranta"
+    ],
+    "02448": [
+      "Knuutilanranta"
+    ],
+    "02449": [
+      "Knuutilanranta"
+    ],
+    "02454": [
+      "Knuutilanranta"
+    ],
+    "02464": [
+      "Knuutilanranta"
+    ],
+    "02466": [
+      "Knuutilanranta"
+    ],
+    "02473": [
+      "Knuutilanranta"
+    ],
+    "02482": [
+      "Knuutilanranta"
+    ],
+    "02489": [
+      "Knuutilanranta"
+    ],
+    "02499": [
+      "Knuutilanranta"
+    ],
+    "02501": [
+      "Knuutilanranta"
+    ],
+    "02503": [
+      "Knuutilanranta"
+    ],
+    "02506": [
+      "Knuutilanranta"
+    ],
+    "02523": [
+      "Knuutilanranta"
+    ],
+    "02527": [
+      "Knuutilanranta"
+    ],
+    "02605": [
+      "Knuutilanranta"
+    ],
+    "02752": [
+      "Knuutilanranta"
+    ],
+    "02764": [
+      "Knuutilanranta"
+    ],
+    "02776": [
+      "Knuutilanranta"
+    ],
+    "02779": [
+      "Knuutilanranta"
+    ],
+    "02780": [
+      "Knuutilanranta"
+    ],
+    "02803": [
+      "Knuutilanranta"
+    ],
+    "02899": [
+      "Knuutilanranta"
+    ],
+    "02930": [
+      "Knuutilanranta"
+    ],
+    "02944": [
+      "Knuutilanranta"
+    ],
+    "03029": [
+      "Knuutilanranta"
+    ],
+    "03048": [
+      "Knuutilanranta"
+    ],
+    "03193": [
+      "Knuutilanranta"
+    ],
+    "03206": [
+      "Knuutilanranta"
+    ],
+    "03373": [
+      "Knuutilanranta"
+    ],
+    "06331": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "06332": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "06335": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "06339": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "06352": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "06362": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "06364": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "06365": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "06374": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "06375": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "06376": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "06379": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "06381": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "06383": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "06387": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "06388": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "06394": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "06396": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "06397": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "06403": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "06408": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "06410": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "06416": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "06418": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "06419": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "06422": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "06452": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "06459": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "06465": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "06473": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "06479": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "06481": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "07655": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "07658": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "07663": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "07664": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "07681": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "07684": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "07686": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "07688": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "07696": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "07697": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "07700": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "07701": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "07702": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "07705": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "07709": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "07712": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "07713": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "07719": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "07726": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "07728": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "07732": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "07734": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "07744": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "07835": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "07839": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "07842": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "07845": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "07848": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "07850": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "07851": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "07852": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "07853": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "07858": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "07860": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "07866": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "07867": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "07874": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "07876": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "07878": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "07884": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09075": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09078": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09080": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09082": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09083": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09088": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09090": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09092": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09097": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09100": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09103": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09104": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09107": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09129": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09132": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09133": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09146": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09154": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09161": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09169": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09175": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09177": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09219": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09233": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09237": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09238": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09245": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09246": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09247": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09251": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09257": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09261": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09263": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09265": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09266": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09271": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09276": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09277": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09282": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09283": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09285": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09289": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09294": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09295": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09300": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09301": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09302": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09311": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09316": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09318": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09321": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09324": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09336": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09338": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09343": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09350": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09354": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09357": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09358": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09359": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09362": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09373": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09374": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "11107": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "11114": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "11127": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "11128": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "11131": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "11132": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "11135": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "11138": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "11143": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "11146": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "11152": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "11153": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "11161": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "11166": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "11167": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "11186": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "11189": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "11193": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "11197": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "11200": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "11201": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "11203": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "11204": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "11208": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "11211": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "11214": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "11216": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "11220": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "11221": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "11222": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "11233": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "11236": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "11237": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "11240": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "11241": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "11243": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "11247": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "11255": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "11257": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "11258": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "11264": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "11265": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "11267": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "11268": [
+      "autolabelled_poledetection"
+    ],
+    "11273": [
+      "autolabelled_poledetection"
+    ],
+    "11276": [
+      "autolabelled_poledetection"
+    ],
+    "11279": [
+      "autolabelled_poledetection"
+    ],
+    "11280": [
+      "autolabelled_poledetection"
+    ],
+    "11281": [
+      "autolabelled_poledetection"
+    ],
+    "11295": [
+      "autolabelled_poledetection"
+    ],
+    "11299": [
+      "autolabelled_poledetection"
+    ],
+    "11309": [
+      "autolabelled_poledetection"
+    ],
+    "11311": [
+      "autolabelled_poledetection"
+    ],
+    "11316": [
+      "autolabelled_poledetection"
+    ],
+    "11950": [
+      "autolabelled_poledetection"
+    ],
+    "11951": [
+      "autolabelled_poledetection"
+    ],
+    "11952": [
+      "autolabelled_poledetection"
+    ],
+    "11959": [
+      "autolabelled_poledetection"
+    ],
+    "11961": [
+      "autolabelled_poledetection"
+    ],
+    "11962": [
+      "autolabelled_poledetection"
+    ],
+    "11965": [
+      "autolabelled_poledetection"
+    ],
+    "11969": [
+      "autolabelled_poledetection"
+    ],
+    "11975": [
+      "autolabelled_poledetection"
+    ],
+    "11986": [
+      "autolabelled_poledetection"
+    ],
+    "11995": [
+      "autolabelled_poledetection"
+    ],
+    "12603": [
+      "autolabelled_poledetection"
+    ],
+    "12604": [
+      "autolabelled_poledetection"
+    ],
+    "12606": [
+      "autolabelled_poledetection"
+    ],
+    "12607": [
+      "autolabelled_poledetection"
+    ],
+    "12609": [
+      "autolabelled_poledetection"
+    ],
+    "12618": [
+      "autolabelled_poledetection"
+    ],
+    "12619": [
+      "autolabelled_poledetection"
+    ],
+    "12629": [
+      "autolabelled_poledetection"
+    ],
+    "12633": [
+      "autolabelled_poledetection"
+    ],
+    "12634": [
+      "autolabelled_poledetection"
+    ],
+    "12640": [
+      "autolabelled_poledetection"
+    ],
+    "12643": [
+      "autolabelled_poledetection"
+    ],
+    "01690": [
+      "Knuutilanranta"
+    ],
+    "02457": [
+      "Knuutilanranta"
+    ],
+    "02500": [
+      "Knuutilanranta"
+    ],
+    "02617": [
+      "Knuutilanranta"
+    ],
+    "02897": [
+      "Knuutilanranta"
+    ],
+    "06368": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "06393": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "06409": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "06433": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "06485": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "07667": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "07703": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09076": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09164": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09258": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09267": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09269": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "11192": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "11217": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "11231": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "11266": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "11314": [
+      "autolabelled_poledetection"
+    ],
+    "12602": [
+      "autolabelled_poledetection"
+    ],
+    "12620": [
+      "autolabelled_poledetection"
+    ],
+    "01732": [
+      "Knuutilanranta"
+    ],
+    "01757": [
+      "Knuutilanranta"
+    ],
+    "02509": [
+      "Knuutilanranta"
+    ],
+    "02609": [
+      "Knuutilanranta"
+    ],
+    "02765": [
+      "Knuutilanranta"
+    ],
+    "06413": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "06432": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "06470": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "07649": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "07660": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "07699": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "07710": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "07727": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "07731": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "07833": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09081": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09089": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09114": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09227": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09235": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09250": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09337": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09363": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "09371": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "11155": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "11156": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "11227": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "11263": [
+      "alakylantie",
+      "autolabelled_poledetection"
+    ],
+    "11285": [
+      "autolabelled_poledetection"
+    ],
+    "11294": [
+      "autolabelled_poledetection"
+    ],
+    "12628": [
+      "autolabelled_poledetection"
+    ],
+    "12642": [
+      "autolabelled_poledetection"
+    ]
+  }
+}
