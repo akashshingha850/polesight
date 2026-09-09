@@ -1,5 +1,6 @@
 {
   "dataset_overview": {
+    "modality": "intensity_filtered",
     "total_images": 1088,
     "total_annotations": 6121,
     "polygon_annotations": 6121,

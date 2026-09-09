@@ -30,6 +30,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 from collections import Counter, defaultdict
 from datetime import datetime
 from pathlib import Path
@@ -40,6 +41,12 @@ from dataset_prepare import build_image_index, source_route
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
 DATA_DIR = ROOT_DIR / "data"
+
+# Splits hold one directory per modality. The sidecars this script writes are
+# modality-independent — route, domain and instance counts are properties of the
+# frame, not of how it was rendered — so they are built from the modality every
+# published baseline used, and apply to both. POLESIGHT_MODALITY overrides it.
+MODALITY = os.environ.get("POLESIGHT_MODALITY", "intensity_filtered")
 ARCHIVE_DIR = ROOT_DIR / "archive"
 METADATA_PATH = DATA_DIR / "metadata.json"
 TAGS_PATH = DATA_DIR / "tags.json"
@@ -155,14 +162,14 @@ def build_rows(class_names, sources, roboflow) -> dict[str, dict]:
 
     rows: dict[str, dict] = {}
     for split in SPLITS:
-        images_dir = DATA_DIR / split / "images"
+        images_dir = DATA_DIR / split / MODALITY / "images"
         if not images_dir.is_dir():
             continue
         for image_path in sorted(images_dir.iterdir()):
             if image_path.suffix.lower() not in IMAGE_EXTENSIONS:
                 continue
             stem = image_path.stem
-            label_path = DATA_DIR / split / "labels" / f"{stem}.txt"
+            label_path = DATA_DIR / split / MODALITY / "labels" / f"{stem}.txt"
             counts = read_label(label_path) if label_path.exists() else Counter()
 
             with Image.open(image_path) as image:

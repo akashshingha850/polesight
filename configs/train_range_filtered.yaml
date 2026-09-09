@@ -1,0 +1,74 @@
+# =============================================================================
+# PoleSight — stock-defaults baseline sweep, range_filtered modality
+# =============================================================================
+#
+#   python train.py --config configs/train_range_filtered.yaml
+#   python train.py --config configs/train_range_filtered.yaml yolov8
+#   python train.py --config configs/train_range_filtered.yaml --eval
+#
+# Identical to train_default.yaml except for the two keys that have to differ:
+# the data YAML and the output directory. That is the point — the published
+# baselines and this sweep differ in the modality alone, so the two sets of
+# numbers isolate what the rendering is worth and nothing else.
+#
+# Like train_default.yaml it carries no hyperparameters at all, so every family
+# trains on Ultralytics' own defaults and the three architectures are compared
+# on equal terms.
+#
+# The absence of keys is the point: anything not written here is whatever the
+# installed Ultralytics version defaults to (optimizer=auto, lr0=0.01,
+# momentum=0.937, the stock augmentation set, close_mosaic=10, overlap_mask,
+# mask_ratio=4, amp, pretrained). Restating those values would freeze them at
+# today's defaults and quietly turn a "defaults" baseline into a recipe.
+# =============================================================================
+
+common:
+  data: data/data_range_filtered.yaml
+  project: run/segment/polesight-range-filtered
+  task: segment
+  device: 0
+
+  # Ultralytics' own defaults, stated because a report has to quote them.
+  epochs: 100
+  patience: 100
+  batch: 16
+  imgsz: 640
+  seed: 0
+  deterministic: true
+
+  # Infrastructure, not hyperparameters: these change how fast a run goes and
+  # what it writes, never what the model learns. min_batch is this wrapper's
+  # OOM floor — an x-variant that will not fit 16 on an 11 GB card is retried
+  # halved, and verify.json records the batch each run actually used.
+  min_batch: 4
+  workers: 8
+  cache: true
+  plots: true
+
+  # Model selection stays on val; the reported numbers come from test.
+  val: true
+  split: val
+  eval_splits: [test]
+
+families:
+  yolov8:
+    stem: "yolov8{v}-seg"
+    variants: [n, s, m, l, x]
+    overrides: {}
+
+  yolo11:
+    stem: "yolo11{v}-seg"
+    variants: [n, s, m, l, x]
+    overrides: {}
+
+  # No arms here, unlike train.yaml: an arm forces the head on or off, which is
+  # an architecture choice rather than a default. Each variant trains once, as
+  # the checkpoint ships.
+  yolo26:
+    stem: "yolo26{v}-seg"
+    variants: [n, s, m, l, x]
+    overrides: {}
+
+wandb:
+  project: PoleSight-defaults-baseline-range-filtered
+  job_type: baseline

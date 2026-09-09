@@ -499,11 +499,18 @@ def _dataset_summary(data: str | Path) -> dict:
     except OSError:
         return summary
     summary["classes"] = spec.get("names")
-    summary["images"] = {
-        split: len(list((data_path.parent / split / "images").iterdir()))
-        for split in ("train", "valid", "test")
-        if (data_path.parent / split / "images").is_dir()
-    }
+    summary["modality"] = spec.get("modality")
+    # Take the image directories from the YAML's own split entries rather than
+    # guessing at <split>/images: the splits hold one directory per modality, so
+    # which one a sweep was scored on is exactly what these entries record.
+    summary["images"] = {}
+    for key, split in (("train", "train"), ("val", "valid"), ("test", "test")):
+        entry = spec.get(key)
+        if not isinstance(entry, str):
+            continue
+        images_dir = (data_path.parent / entry).resolve()
+        if images_dir.is_dir():
+            summary["images"][split] = len(list(images_dir.iterdir()))
     return summary
 
 

@@ -1,0 +1,17 @@
+# PoleSight — range_filtered modality (stored value is projected range).
+# The same 1,088 frames, the same split and the same labels as data.yaml, which
+# is the intensity_filtered rendering the published baselines were scored on.
+# Frame names are aligned across the two, so 0001.png is one frame in two views.
+modality: range_filtered
+
+train: train/range_filtered/images
+val: valid/range_filtered/images
+test: test/range_filtered/images
+
+nc: 4
+names: ['fence_pole', 'gantry_sign_pole', 'light_pole', 'traffic_pole']
+
+roboflow:
+  workspace: polesight
+  project: polesight-7kgwj
+  version: 12

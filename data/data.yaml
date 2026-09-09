@@ -1,6 +1,12 @@
-train: ../train/images
-val: ../valid/images
-test: ../test/images
+# PoleSight — intensity_filtered modality (stored value is return intensity).
+# This is the modality every baseline in results/ was trained and scored on.
+# data_range_filtered.yaml is the same 1,088 frames, the same split and the same
+# labels, rendered as projected range.
+modality: intensity_filtered
+
+train: train/intensity_filtered/images
+val: valid/intensity_filtered/images
+test: test/intensity_filtered/images
 
 nc: 4
 names: ['fence_pole', 'gantry_sign_pole', 'light_pole', 'traffic_pole']

@@ -16,9 +16,9 @@ it, and the evaluation records behind every published number.
 ## Contents
 
 ```
-data/                 the dataset: 1,088 frames, YOLO polygon labels, split definition
+data/                 the dataset: 1,088 frames in two modalities, YOLO polygon labels, split definition
 results/              evaluation records for the fifteen published baselines (no weights)
-configs/              the sweep configuration that produced those baselines
+configs/              the sweep configuration that produced those baselines, and its range_filtered twin
 scripts/              dataset preparation, analysis, training, table generation
 rangegen/             the §III generation framework — see rangegen/README.md
 ```
@@ -30,20 +30,44 @@ rangegen/             the §III generation framework — see rangegen/README.md
 | Frames | 1,088 — 1,059 annotated, 29 background negatives |
 | Instances | 6,121 polygon masks |
 | Split | 870 train / 109 val / 109 test |
-| Image format | 1024×128 single-channel 16-bit PNG; stored value is return intensity |
+| Modalities | `intensity_filtered` and `range_filtered` — the same frames, two renderings |
+| Image format | 1024×128 single-channel 16-bit PNG; stored value is return intensity or projected range |
 | Label format | YOLO polygons, `class x1 y1 x2 y2 … xn yn`, normalized |
 | Classes | `fence_pole`, `gantry_sign_pole`, `light_pole`, `traffic_pole` |
 
 ```
 data/
-├── data.yaml                       class names and split paths
-├── train/{images,labels}/          870 frames
-├── valid/{images,labels}/          109 frames
-├── test/{images,labels}/           109 frames
+├── data.yaml                       intensity_filtered: class names and split paths
+├── data_range_filtered.yaml        range_filtered: the same, for the other modality
+├── train/
+│   ├── intensity_filtered/{images,labels}/    870 frames
+│   └── range_filtered/{images,labels}/        870 frames
+├── valid/                          same shape, 109 frames
+├── test/                           same shape, 109 frames
 ├── metadata.json                   per-image route, acquisition domain, bit depth, instance counts
 ├── tags.json                       annotation-tool tags, keyed by image stem
 └── dataset_analysis_report.{json,md}
 ```
+
+### Modalities
+
+The release ships two renderings of the same 1,088 frames. `intensity_filtered`
+stores return intensity and is the modality every baseline in `results/` was
+trained and scored on; `range_filtered` stores projected range. They share one
+split assignment and one label set, and a frame carries the same filename in
+both — `train/intensity_filtered/images/0001.png` and
+`train/range_filtered/images/0001.png` are one frame in two views. Results
+across them are therefore directly comparable.
+
+Each modality carries its own copy of the labels rather than sharing one
+directory, because Ultralytics locates labels by substituting `/images/` with
+`/labels/` in the image path, which a shared directory one level up would
+defeat. The two copies are verified byte-identical by
+`scripts/dataset_analysis.py`, which reports any divergence as a
+`modality_mismatch` issue.
+
+`metadata.json` and `tags.json` describe the frames themselves — route, domain,
+instance counts — so one copy at `data/` root applies to both modalities.
 
 The full azimuth maps onto the image width, so the 1,024 columns give a
 horizontal resolution of 360°/1024 = 0.35°, and the 128 rows divide the vertical
@@ -105,8 +129,16 @@ python scripts/make_table.py --check path/to/section.tex
 ### Dataset statistics and figures
 
 ```bash
-python scripts/dataset_analysis.py
+python scripts/dataset_analysis.py                              # intensity_filtered
+POLESIGHT_MODALITY=range_filtered python scripts/dataset_analysis.py
 ```
+
+`POLESIGHT_MODALITY` selects the modality, here and in `dataset_prepare.py` and
+`image_metadata.py`. Anything but the default is written beside the primary
+report as `dataset_analysis_report.<modality>.{json,md,html}`, so one modality's
+record can never overwrite the other's. Every geometry statistic is identical
+between the two — they share a label set — so the reports differ only in the
+image-property and file-size sections.
 
 Writes a JSON report, a Markdown summary, a self-contained HTML dashboard, and
 every figure as PNG plus a JSON file holding the exact data that figure plots.
@@ -124,6 +156,15 @@ python scripts/train.py                       # all fifteen runs
 python scripts/train.py yolov8                # one family
 python scripts/train.py --eval                # re-score existing checkpoints
 ```
+
+To run the same sweep on the other modality:
+
+```bash
+python scripts/train.py --config configs/train_range_filtered.yaml
+```
+
+That config is `train_default.yaml` with two keys changed — the data YAML and
+the output directory — so the two sweeps differ in the modality alone.
 
 `configs/train_default.yaml` is the configuration behind the published numbers.
 It deliberately carries **no hyperparameters**: every family trains on the
@@ -175,6 +216,10 @@ Neither is needed to reproduce anything: `data/` ships prepared. `--source
 roboflow` and the tag lookup require credentials for the authors' private
 annotation workspace, and `image_metadata.py` reads the pre-conversion source
 frames under `archive/`, which is not redistributed.
+
+Both write the `intensity_filtered` modality by default and take the same
+`POLESIGHT_MODALITY` override as the analyser. The sidecars they produce describe
+the frames rather than a rendering of them, so one copy covers both modalities.
 
 ## Generation framework
 

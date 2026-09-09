@@ -5,6 +5,7 @@ import ast
 import csv
 import datetime
 import json
+import os
 import random
 import re
 import shutil
@@ -33,6 +34,11 @@ SOURCE = "local"
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
 DATA_DIR = ROOT_DIR / "data"
+# Each split holds one directory per modality. This script prepares the
+# intensity_filtered rendering, which is the one every published baseline was
+# scored on; POLESIGHT_MODALITY points it at another. Roboflow exports keep
+# their own flat <split>/{images,labels} shape and are not affected.
+MODALITY = os.environ.get("POLESIGHT_MODALITY", "intensity_filtered")
 SOURCE_LABELS_DIR = DATA_DIR / ".draft" / "labels"
 ROBOFLOW_DOWNLOAD_DIR = DATA_DIR / ".draft" / "_roboflow"
 # Written into the download so a stale export is never reused across a version bump.
@@ -229,7 +235,7 @@ def prepared_image_names() -> set[str]:
     return {
         image.name
         for split in SPLITS
-        for image in (DATA_DIR / split / "images").glob("*")
+        for image in (DATA_DIR / split / MODALITY / "images").glob("*")
         if image.suffix.lower() in IMAGE_EXTENSIONS
     }
 
@@ -540,9 +546,11 @@ def write_data_yaml(export_dir: Path) -> None:
 
     cfg = load_roboflow_config()
     lines = [
-        "train: ../train/images",
-        "val: ../valid/images",
-        "test: ../test/images",
+        f"modality: {MODALITY}",
+        "",
+        f"train: train/{MODALITY}/images",
+        f"val: valid/{MODALITY}/images",
+        f"test: test/{MODALITY}/images",
         "",
         f"nc: {len(ordered)}",
         f"names: {ordered!r}",
@@ -1033,7 +1041,7 @@ def reset_output_dirs(dry_run: bool) -> None:
     """Recreate the generated split directories unless this is a dry run."""
     for split in SPLITS:
         for kind in ("images", "labels"):
-            target = DATA_DIR / split / kind
+            target = DATA_DIR / split / MODALITY / kind
             if dry_run:
                 continue
             if target.exists():
@@ -1095,13 +1103,13 @@ def copy_sample(
         return True
 
     if convert:
-        write_as_rgb8(image_path, DATA_DIR / split / "images" / f"{stem}.png")
+        write_as_rgb8(image_path, DATA_DIR / split / MODALITY / "images" / f"{stem}.png")
     else:
-        shutil.copy2(image_path, DATA_DIR / split / "images" / image_path.name)
+        shutil.copy2(image_path, DATA_DIR / split / MODALITY / "images" / image_path.name)
     # Written rather than copied: box-style lines become rectangle polygons on
     # the way out, so the prepared split is always segmentation-shaped.
     label_text, _ = polygonize_boxes(label_path.read_text(encoding="utf-8"))
-    (DATA_DIR / split / "labels" / f"{stem}.txt").write_text(
+    (DATA_DIR / split / MODALITY / "labels" / f"{stem}.txt").write_text(
         label_text, encoding="utf-8"
     )
     return True

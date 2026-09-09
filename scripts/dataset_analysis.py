@@ -29,6 +29,7 @@ Coverage relative to NVIDIA TAO's Data Analytics module (analyze/validate):
 
 import os
 import json
+import filecmp
 import yaml
 import numpy as np
 from collections import Counter, defaultdict
@@ -77,12 +78,28 @@ SIZE_CATEGORY_THRESHOLDS_PX = (32 ** 2, 96 ** 2)
 SIZE_CATEGORIES = ["small", "medium", "large"]
 
 
-def resolve_split_dir(split_name):
+# The release ships two renderings of the same frames side by side under every
+# split: intensity_filtered, which every baseline in results/ was trained and
+# scored on, and range_filtered. They share one split assignment and one label
+# set, so every statistic in this report is identical between them except the
+# image-property section. POLESIGHT_MODALITY picks which one is analysed.
+MODALITIES = ("intensity_filtered", "range_filtered")
+DEFAULT_MODALITY = MODALITIES[0]
+MODALITY = os.environ.get("POLESIGHT_MODALITY", DEFAULT_MODALITY)
+# The default modality's report keeps the plain filename the README and the
+# manuscript cite. Any other modality is written beside it under its own name,
+# so analysing one can never overwrite the record of the other.
+REPORT_STEM = "dataset_analysis_report" + (
+    "" if MODALITY == DEFAULT_MODALITY else f".{MODALITY}"
+)
+
+
+def resolve_split_dir(split_name, modality=None):
     for candidate in SPLIT_ALIASES.get(split_name, (split_name,)):
-        candidate_dir = DATA_DIR / candidate
+        candidate_dir = DATA_DIR / candidate / (modality or MODALITY)
         if candidate_dir.exists():
             return candidate_dir
-    return DATA_DIR / split_name
+    return DATA_DIR / split_name / (modality or MODALITY)
 
 
 def load_classes_from_yaml():
@@ -140,6 +157,42 @@ def list_labels(split):
     if not d.exists():
         return []
     return sorted(d.rglob("*.txt"))
+
+
+def check_modality_mirrors(validation):
+    """Verify the two modalities still hold the same frames and the same labels.
+
+    The label set is stored once per modality rather than shared, because
+    Ultralytics finds labels by substituting ``/images/`` -> ``/labels/`` in the
+    image path, which a shared directory one level up would defeat. Duplicated
+    ground truth is only safe while it stays exact, so it is checked rather than
+    trusted: editing one copy and not the other would otherwise quietly score the
+    two modalities against different annotations.
+    """
+    for split in SPLITS:
+        dirs = {m: resolve_split_dir(split, m) for m in MODALITIES}
+        available = [m for m in MODALITIES if dirs[m].exists()]
+        if len(available) < 2:
+            continue
+        base, others = available[0], available[1:]
+        for other in others:
+            for kind, keep in (("images", lambda p: p.suffix.lower() in IMAGE_EXTS),
+                               ("labels", lambda p: p.suffix.lower() == ".txt")):
+                found = {
+                    m: {p.stem for p in (dirs[m] / kind).rglob("*")
+                        if p.is_file() and keep(p)}
+                    for m in (base, other)
+                }
+                for stem in sorted(found[base] ^ found[other]):
+                    only = base if stem in found[base] else other
+                    validation.add("modality_mismatch", split,
+                                   f"{split}/*/{kind}/{stem}: present only in {only}")
+            names = sorted(p.name for p in (dirs[base] / "labels").rglob("*.txt"))
+            _, differing, errors = filecmp.cmpfiles(
+                dirs[base] / "labels", dirs[other] / "labels", names, shallow=False)
+            for name in sorted(differing) + sorted(errors):
+                validation.add("modality_mismatch", split,
+                               f"{split}/*/labels/{name}: {base} and {other} differ")
 
 
 # ===== ANNOTATION PARSING =====
@@ -393,6 +446,7 @@ ISSUE_DESCRIPTIONS = {
     "duplicate_row": "Exact duplicate annotation row in the same file",
     "image_without_label": "Image with no label file",
     "label_without_image": "Label file with no matching image",
+    "modality_mismatch": "Modalities disagree on frames or labels for a split",
 }
 
 
@@ -434,13 +488,16 @@ def build_report():
                 validation.add("image_without_label", split,
                                str(path.relative_to(DATA_DIR)))
         for stem in sorted(label_stems[split] - image_stems):
-            validation.add("label_without_image", split, f"{split}/labels/{stem}.txt")
+            validation.add("label_without_image", split,
+                           f"{split}/{MODALITY}/labels/{stem}.txt")
         split_stats[split] = {
             "images": len(images),
             "labels": len(label_stems[split]),
             "annotated": annotated,
             "unannotated": len(images) - annotated,
         }
+
+    check_modality_mirrors(validation)
 
     # --- Attach pixel geometry to every instance ---
     raw = {k: [] for k in (
@@ -594,6 +651,7 @@ def build_report():
 
     report = {
         "dataset_overview": {
+            "modality": MODALITY,
             "total_images": total_images,
             "total_annotations": total_instances,
             "polygon_annotations": polygon_instances,
@@ -657,7 +715,7 @@ def build_report():
 # ===== JSON OUTPUT =====
 
 def write_json_report(report):
-    output_file = DATA_DIR / "dataset_analysis_report.json"
+    output_file = DATA_DIR / f"{REPORT_STEM}.json"
     with open(output_file, "w") as f:
         json.dump(report, f, indent=2)
     return output_file
@@ -697,7 +755,8 @@ def generate_markdown_report(report, figures):
     parts = [
         "# Dataset Analysis Report",
         "",
-        f"Instance segmentation · {ov['num_classes']} classes · generated {generated}",
+        f"Instance segmentation · {ov['num_classes']} classes · "
+        f"{ov['modality']} modality · generated {generated}",
         "",
         "## Key figures",
         "",
@@ -821,7 +880,7 @@ def generate_markdown_report(report, figures):
 
     parts += ["---", "", f"Generated by `dataset_analysis.py` · {generated}", ""]
 
-    output_file = DATA_DIR / "dataset_analysis_report.md"
+    output_file = DATA_DIR / f"{REPORT_STEM}.md"
     output_file.write_text("\n".join(parts), encoding="utf-8")
     return output_file
 
@@ -2175,7 +2234,7 @@ def generate_html_report(report, figures):
 </body>
 </html>"""
 
-    output_file = DATA_DIR / "dataset_analysis_report.html"
+    output_file = DATA_DIR / f"{REPORT_STEM}.html"
     output_file.write_text(html, encoding="utf-8")
     return output_file
 
