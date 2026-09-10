@@ -1,0 +1,15 @@
+{
+  "name": "yolo26n-seg",
+  "model": "yolo26n-seg.pt",
+  "epochs_run": 100,
+  "epochs_configured": 100,
+  "early_stopped": false,
+  "best_epoch": 85,
+  "batch_actual": 16,
+  "optimizer_actual": "AdamW",
+  "end2end_actual": true,
+  "mosaic": 1.0,
+  "close_mosaic": 10,
+  "progloss_o2o_at_best": 0.793939393939394,
+  "progloss_o2o_final": 0.9
+}

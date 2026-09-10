@@ -1,0 +1,15 @@
+{
+  "name": "yolo11n-seg",
+  "model": "yolo11n-seg.pt",
+  "epochs_run": 100,
+  "epochs_configured": 100,
+  "early_stopped": false,
+  "best_epoch": 89,
+  "batch_actual": 16,
+  "optimizer_actual": "AdamW",
+  "end2end_actual": false,
+  "mosaic": 1.0,
+  "close_mosaic": 10,
+  "progloss_o2o_at_best": null,
+  "progloss_o2o_final": null
+}

@@ -37,3 +37,8 @@ venv/
 .vscode/
 .idea/
 .DS_Store
+*.log
+
+
+TODO.md
+
