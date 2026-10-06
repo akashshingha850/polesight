@@ -46,3 +46,5 @@ check_labels_report.txt
 *.pt
 *.env
 /paper
+*.pkl
+/fusion/
