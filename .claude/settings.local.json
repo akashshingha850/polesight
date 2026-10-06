@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 dataset_analysis.py)",
+      "Bash(python3 -c ' *)",
+      "Bash(python3 -)"
+    ]
+  }
+}

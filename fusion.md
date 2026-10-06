@@ -97,6 +97,8 @@ Use `yolo11m-seg` for the whole ladder. It is the best of the three `m` models o
 
 ## 7. Immediate next steps
 
+> Implemented in [fusion/](fusion/README.md): `fusion/make_fused.py`, `fusion/train_fused.py`, late fusion in `fusion/fuse_eval.py`, two-stream mid fusion in `fusion/dual_stream.py`. Steps 1–3 below were the original plan.
+
 1. Write `scripts/make_fused.py` to build the packed-channel dataset and a `data/data_fused.yaml`.
 2. Add `configs/train_fused.yaml` as a twin of `train_range_filtered.yaml`, changing only the data YAML and output directory.
 3. Run the seed baseline and step 1.
