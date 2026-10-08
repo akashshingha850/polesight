@@ -11,6 +11,12 @@ mobile laser scanning point clouds collected on public roads in Finland.
 This repository holds the released dataset, the scripts that analyse and train on
 it, and the evaluation records behind every published number.
 
+<p align="center">
+  <img src="assets/dataset_overview.gif" alt="PoleSight overview: annotated intensity and range panoramas, split statistics, and paired intensity-vs-range baseline results" width="100%">
+</p>
+
+<sub>Regenerate with <code>python scripts/make_dataset_overview_gif.py</code>; individual frames are in <code>assets/dataset_overview_frames/</code>.</sub>
+
 ---
 
 ## Contents
@@ -21,6 +27,7 @@ results/              evaluation records for the fifteen published baselines (no
 configs/              the sweep configuration that produced those baselines, and its range_filtered twin
 scripts/              dataset preparation, analysis, training, table generation
 rangegen/             the §III generation framework — see rangegen/README.md
+assets/               README overview animation and its individual frames
 ```
 
 ## Dataset
