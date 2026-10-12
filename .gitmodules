@@ -1,0 +1,3 @@
+[submodule "RangeGen"]
+	path = RangeGen
+	url = git@github.com:Aspor/RangeGen.git
