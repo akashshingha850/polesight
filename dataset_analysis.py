@@ -1706,8 +1706,8 @@ def paper_fig_instance_shape(raw, plt):
     xlim, ylim = (0.85, 450), (0.85, 200)
     ax.set_xlim(*xlim)
     ax.set_ylim(*ylim)
-    ax.set_xlabel("Width (px, log)")
-    ax.set_ylabel("Height (px, log)")
+    ax.set_xlabel("Width (px)")
+    ax.set_ylabel("Height (px)")
 
     # The angle a unit-slope log-log line subtends on the page is set by the
     # axes' pixel aspect and by how many decades each axis spans, so it has to
@@ -1768,11 +1768,9 @@ def paper_fig_mask_area_ecdf(report, raw, plt):
     classes = np.array(raw["class_ids"], dtype=int)
     effective_area = np.where(kinds == "polygon", mask_area, bbox_area)
 
-    resolution = next(iter(report["image_properties"]["resolutions"]), None)
-    if not resolution or "x" not in resolution:
-        raise ValueError("A dominant image resolution is required for the ECDF")
-    frame_w, frame_h = (int(v) for v in resolution.split("x"))
-    small_t, medium_t = (t * frame_w * frame_h for t in SIZE_CATEGORY_THRESHOLDS)
+    # COCO's absolute cutoffs on native-resolution area, as stated in the paper
+    # (5988 small / 3 large). Rescaling them to the 1024x128 frame would not.
+    small_t, medium_t = 32 ** 2, 96 ** 2
 
     line_styles = ["-", (0, (4, 2)), (0, (1, 1)), (0, (5, 1, 1, 1))]
     fig, ax = plt.subplots(figsize=(PANEL_W, PANEL_H))
@@ -1797,7 +1795,7 @@ def paper_fig_mask_area_ecdf(report, raw, plt):
     ax.set_xlim(max(positive.min() * 0.8, 0.1), positive.max() * 1.25)
     ax.set_ylim(0, 101)
     ax.set_yticks([0, 25, 50, 75, 100])
-    ax.set_xlabel("Mask area (px$^2$, log)")
+    ax.set_xlabel("Mask area (px$^2$)")
     ax.set_ylabel("Cumulative share (%)")
     ax.legend(loc="upper left", frameon=False, ncol=1,
               handlelength=2.2, borderaxespad=0.2, labelspacing=0.25)
