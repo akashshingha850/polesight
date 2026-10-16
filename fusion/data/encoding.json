@@ -1,0 +1,13 @@
+{
+  "intensity": [
+    0.0,
+    52427.0
+  ],
+  "range": [
+    1874.0,
+    49644.0
+  ],
+  "grad_scale": 0.7905784034728995,
+  "valid_fraction_train": 0.47217807112068966,
+  "note": "intensity linear, range log, both clipped to the train 0.5/99.5 percentiles of valid pixels; no-return pixels = 255; gradient = central difference of log-range"
+}

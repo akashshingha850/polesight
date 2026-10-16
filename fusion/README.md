@@ -1,10 +1,10 @@
 # Intensity–range fusion experiments
 
-Code and results for fusing the two registered PoleSight renderings, `intensity_filtered` (I) and `range_filtered` (R). It implements the plan in [../fusion.md](../fusion.md) and the ranked methods in [../fusion_sota.md](../fusion_sota.md).
+Code and results for fusing the two registered PoleSight renderings, `intensity_filtered` (I) and `range_filtered` (R). It implements the plan in [docs/fusion.md](docs/fusion.md) and the ranked methods in [docs/fusion_sota.md](docs/fusion_sota.md). The literature review behind both is [docs/literature_review.md](docs/literature_review.md), with notes in [docs/research_notes/](docs/research_notes/).
 
 **Question.** Does a model that sees both renderings beat the better single-modality model (range), under identical training, resolution and augmentation?
 
-**Status.** Complete for `yolo11m-seg` at 640 px, 3 seeds: Stage 1 (single-modality controls, early fusion, late fusion) and Stage 2 (two-stream mid fusion and its control). Full tables with bootstrap intervals: [results/results_yolo11m-seg_640.md](results/results_yolo11m-seg_640.md) (numbers in [.json](results/results_yolo11m-seg_640.json)). Not yet run: native 1024 px, other model scales.
+**Status.** Complete for `yolo11m-seg` at 640 px, 3 seeds: Stage 1 (single-modality controls, early fusion, late fusion) and Stage 2 (two-stream mid fusion and its control). Full tables with bootstrap intervals: [results/results_yolo11m-seg_640.md](results/results_yolo11m-seg_640.md) (numbers in [.json](results/results_yolo11m-seg_640.json)). Not yet run: native 1024 px, other model scales. **A second-pass analysis, [ANALYSIS.md](ANALYSIS.md), qualifies findings 1–2 below** (the mid-vs-early ranking depends on the mask scoring grid; `fence_pole` is confounded with one route) and ranks the next steps.
 
 ## Model
 
@@ -14,8 +14,8 @@ Training recipe = the published baseline (`configs/train_default.yaml`): 100 epo
 
 | Change | Why |
 |---|---|
-| Data read from packed 8-bit PNGs (`make_fused.py`) | Stock loading reads the 16-bit PNGs with `IMREAD_COLOR`, collapsing them to ~167 levels in three identical channels |
-| `hsv_h = hsv_s = hsv_v = 0` | On packed input HSV jitter remixes the modalities per sample ([fusion_sota.md §1.3](../fusion_sota.md)) |
+| Data read from packed 8-bit PNGs (`build_fusion_data.py`) | Stock loading reads the 16-bit PNGs with `IMREAD_COLOR`, collapsing them to ~167 levels in three identical channels |
+| `hsv_h = hsv_s = hsv_v = 0` | On packed input HSV jitter remixes the modalities per sample ([fusion_sota.md §1.3](docs/fusion_sota.md)) |
 | Seeds 0, 1, 2 | One seed per cell cannot resolve gains below ~1 point |
 
 Pretrained weights are used as they are; no 4-channel input is used, so the stem initialisation problem in fusion_sota.md §1.2 does not arise.
@@ -33,7 +33,7 @@ Pretrained weights are used as they are; no 4-channel input is used, so the stem
 | `MIDIR` | mid | Two-stream YOLO11m-seg, see below | fusion_sota.md Tier 3, fusion option 1 |
 | `MIDRR` | mid, control | Same architecture, both streams fed range | fusion_sota.md §4, "R ⊕ R" control |
 
-### Encoding (`make_fused.py`)
+### Encoding (`build_fusion_data.py`)
 
 Both renderings are pixel-registered (one spherical projection), so channels are packed per pixel. Constants are measured on the train split only (`fusion/data/encoding.json`).
 
@@ -62,12 +62,14 @@ Both renderings are pixel-registered (one spherical projection), so channels are
 
 | File | Purpose |
 |---|---|
-| `make_fused.py` | Build packed datasets `III, RRR, IRI, IRG` under `fusion/data/` and their YAMLs |
+| `build_fusion_data.py` | Build packed datasets `III, RRR, IRI, IRG` under `fusion/data/` and their YAMLs |
 | `train_fused.py` | Train single and early-fusion arms (layouts × seeds × imgsz) |
 | `train_mid.py` | Train `MIDIR` and `MIDRR` from the Stage 1 checkpoints |
 | `dual_stream.py` | Two-stream model and trainer |
 | `fuse_eval.py` | Per-image evaluator, late fusion (WBF with mask averaging, NMS) |
 | `analyze.py` | Scores all arms, controls, bootstrap; writes `results/results_<model>_<imgsz>.{md,json}` |
+| `analyze_extra.py` | Second pass for [ANALYSIS.md](ANALYSIS.md): AP by IoU, per route, per object (size, complementarity), fine-grid re-scoring, training curves; writes `results/extra_<model>_<imgsz>.json` and `results/figures/` |
+| `docs/` | Plan, method ranking, literature review and research notes |
 | `run_stage1.sh`, `run_stage2.sh` | The sweeps as run |
 | `env.sh` | Environment (see below) |
 
@@ -75,10 +77,11 @@ Both renderings are pixel-registered (one spherical projection), so channels are
 
 ```bash
 source fusion/env.sh
-$PY fusion/make_fused.py
+$PY fusion/build_fusion_data.py
 fusion/run_stage1.sh        # 12 runs, ~28 min each on an RTX 4500 Ada
 fusion/run_stage2.sh        # 6 runs, after Stage 1
 $PY fusion/analyze.py       # writes fusion/results/
+$PY fusion/analyze_extra.py # second pass, after analyze.py
 ```
 
 `env.sh` exists because the repository's `.venv` interpreter symlink is dangling on this machine: it uses a system Python 3.10 with the venv's site-packages on `PYTHONPATH`, and a shim directory supplies the `_bz2` extension that build lacks. On a machine with a working environment, ignore it and run the scripts directly. Generated data, run trees and caches (`fusion/data`, `fusion/runs`, `fusion/cache`) are git-ignored.

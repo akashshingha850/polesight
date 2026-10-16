@@ -5,7 +5,7 @@ The recipe is the published baseline's (scripts/train.py with train_default.yaml
 AdamW via optimizer=auto, 100 epochs, batch 16, stock augmentation, seed-controlled,
 deterministic) with exactly the changes the research notes call for:
 
-    * data            the packed layout (make_fused.py), not the 16-bit PNG
+    * data            the packed layout (build_fusion_data.py), not the 16-bit PNG
     * hsv_h/s/v = 0   a packed image has distinct channels, so HSV jitter would remix
                       the modalities (fusion_sota.md 1.3). Applied to every arm,
                       controls included, so augmentation is not a confound.
@@ -60,7 +60,7 @@ def train_one(model: str, layout: str, imgsz: int, seed: int, epochs: int, batch
     if not best.exists():
         yolo = YOLO(str(ROOT / f"{model}.pt"))
         yolo.train(
-            data=str(DATA / f"data_{layout}.yaml"),
+            data=str(DATA / layout / "data.yaml"),
             task="segment",
             epochs=epochs,
             patience=epochs,
@@ -82,7 +82,7 @@ def train_one(model: str, layout: str, imgsz: int, seed: int, epochs: int, batch
         )
     train_h = (time.time() - start) / 3600
     val = YOLO(str(best)).val(
-        data=str(DATA / f"data_{layout}.yaml"),
+        data=str(DATA / layout / "data.yaml"),
         split="test",
         imgsz=imgsz,
         batch=16,

@@ -272,12 +272,12 @@ def main() -> None:
         import json
         run = Path(a.check)
         rec = json.loads((run / "eval.json").read_text())
-        _, s = evaluate([_parse_member(str(run))], DATA / f"data_{rec['layout']}.yaml", rec["imgsz"], a.split)
+        _, s = evaluate([_parse_member(str(run))], DATA / rec['layout'] / "data.yaml", rec["imgsz"], a.split)
         print(f"here : mask {s['mask_map'] * 100:.3f}  box {s['box_map'] * 100:.3f}")
         print(f"val(): mask {rec['mask']['mAP50-95'] * 100:.3f}  box {rec['box']['mAP50-95'] * 100:.3f}")
     if a.members:
         mem = [_parse_member(m) for m in a.members]
-        _, s = evaluate(mem, DATA / "data_IRI.yaml", a.imgsz, a.split, fuse=a.fuse)
+        _, s = evaluate(mem, DATA / "IRI" / "data.yaml", a.imgsz, a.split, fuse=a.fuse)
         print(f"{a.fuse}: mask {s['mask_map'] * 100:.3f}  box {s['box_map'] * 100:.3f}")
 
 

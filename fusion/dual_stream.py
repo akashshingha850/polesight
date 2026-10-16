@@ -15,7 +15,7 @@ its neck and head, the aux stream with its backbone) and the fusion convolutions
 only new parameters. That removes most of the modality-competition risk at initialisation
 (fusion_sota.md 1.5 and 3.4).
 
-Images are the packed 3-channel layouts of ``make_fused.py``; a stream takes one channel
+Images are the packed 3-channel layouts of ``build_fusion_data.py``; a stream takes one channel
 and replicates it to three so the pretrained stems apply unchanged.
 
 This module must stay importable under the name ``dual_stream``: Ultralytics pickles the

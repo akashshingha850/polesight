@@ -59,7 +59,7 @@ def run_one(mode: str, seed: int, model: str, imgsz: int, epochs: int, lr0: floa
     dual_stream.DualStreamTrainer.main_ckpt = str(main_ckpt)
     dual_stream.DualStreamTrainer.aux_ckpt = str(aux_ckpt)
     dual_stream.DualStreamTrainer.chans = chans
-    data = str(DATA / f"data_{layout}.yaml")
+    data = str(DATA / layout / "data.yaml")
     start = time.time()
     if not (out / "train" / "weights" / "best.pt").exists():
         trainer = dual_stream.DualStreamTrainer(overrides=dict(

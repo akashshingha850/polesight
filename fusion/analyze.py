@@ -70,7 +70,7 @@ DATASET_OF = {"MIDIR": "IRI", "MIDRR": "RRR"}  # two-stream runs read the packed
 
 def single(model, layout, imgsz, seed):
     w = best_pt(model, layout, imgsz, seed)
-    data = DATA / f"data_{DATASET_OF.get(layout, layout)}.yaml"
+    data = DATA / DATASET_OF.get(layout, layout) / "data.yaml"
     return cached(f"{model}_{layout}_{imgsz}_s{seed}", lambda: fe.evaluate([(w, None)], data, imgsz))
 
 
@@ -81,7 +81,7 @@ def pair(model, imgsz, a, b, fuse, tag, class_w=None, split="test"):
     """
     members = [(best_pt(model, la, imgsz, sa), ch) for la, sa, ch in (a, b)]
     return cached(f"{model}_{imgsz}_{tag}_{fuse}_{split}", lambda: fe.evaluate(
-        members, DATA / "data_IRI.yaml", imgsz, split, fuse=fuse, class_w=class_w))
+        members, DATA / "IRI" / "data.yaml", imgsz, split, fuse=fuse, class_w=class_w))
 
 
 def tune_class_weights(model, imgsz, a, b, tag):
